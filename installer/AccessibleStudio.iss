@@ -1,5 +1,5 @@
 #define AppName "Accessible Studio"
-#define AppVersion "1.1.4 Volume Speech Test 2"
+#define AppVersion "1.1.4"
 #define Publisher "Tiflo.Info"
 #define Website "https://tiflo.info"
 #define ObsWebsite "https://obsproject.com/download"
@@ -21,7 +21,7 @@ DisableProgramGroupPage=yes
 DisableWelcomePage=no
 LicenseFile=..\LICENSE.txt
 OutputDir=..\..\outputs
-OutputBaseFilename=AccessibleStudio-1.1.4-Volume-Speech-Test-2-Setup
+OutputBaseFilename=AccessibleStudio-1.1.4-Setup
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
@@ -34,7 +34,7 @@ SetupIconFile=
 CloseApplications=no
 RestartApplications=no
 UninstallDisplayName={#AppName} {#AppVersion}
-VersionInfoVersion=1.1.4.2
+VersionInfoVersion=1.1.4.3
 VersionInfoCompany={#Publisher}
 VersionInfoDescription={#AppName} installer
 VersionInfoCopyright=Copyright (C) 2026 {#Publisher}
@@ -225,12 +225,14 @@ ukrainian.LegacyCleanupError=Не вдалося безпечно видалит
 [InstallDelete]
 Type: files; Name: "{app}\bin\64bit\accessible-studio-cef-relauncher.exe"
 Type: files; Name: "{app}\CEF-ACCESSIBILITY-TEST-NOTES.md"
+Type: files; Name: "{app}\RELIABILITY-TEST-NOTES.md"
+Type: files; Name: "{app}\RELIABILITY-TEST-NOTES.md"
 
 [Files]
 Source: "..\package\bin\64bit\accessible-studio.dll"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion
 Source: "..\package\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\PROJECT_README.md"; DestDir: "{app}"; DestName: "README.md"; Flags: ignoreversion
-Source: "..\RELIABILITY-TEST-NOTES.md"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\RELEASE-NOTES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE-GPL-2.0.txt"; DestDir: "{app}"; Flags: ignoreversion

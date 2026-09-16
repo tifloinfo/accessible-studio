@@ -21,7 +21,7 @@ msbuild AccessibleStudio.sln /p:Configuration=Release /p:Platform=x64 `
 
 Output: build/Release/accessible-studio.dll. Building does not install the plugin into OBS.
 
-## Build, check, and package a test installer
+## Build, check, and package the release installer
 
 Install the pinned documentation dependencies once:
 
@@ -32,15 +32,15 @@ npm ci
 Then run:
 
 ```powershell
-.\tools\build-test.ps1 `
+.\tools\build-release.ps1 `
   -QtRoot 'C:\path\to\qt6' `
   -WebView2Root 'C:\path\to\webview2' `
   -MSBuildPath 'C:\path\to\MSBuild.exe' `
   -InnoCompiler 'C:\path\to\ISCC.exe' `
-  -OutputDirectory 'C:\path\to\test-output'
+  -OutputDirectory 'C:\path\to\release-output'
 ```
 
-The script rebuilds the plugin and regression executable, runs checks, regenerates HTML, stages the DLL and locales, compiles Setup, and writes SHA256SUMS.txt. It does not install or publish. Without OutputDirectory, it uses the test-output folder specified in the script.
+The script rebuilds the plugin and regression executable, runs checks, regenerates HTML, stages the DLL and locales, compiles Setup, and writes SHA256SUMS.txt. It does not install or publish. Without OutputDirectory, it uses outputs/release-1.1.4 beside the repository.
 
 Regression tests compile the actual plugin with mocked OBS interfaces and Qt's offscreen platform. They cover initialization, level conversion, shortcut conflicts, safe Fit recovery, focus handling, response completion, and volume direction and speech. They do not reproduce a screen reader or a full live OBS session.
 

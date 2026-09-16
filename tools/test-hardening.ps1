@@ -98,7 +98,7 @@ Assert-True (($canvas -match 'copy_latest') -and ($canvas -match 'CopyLatestResu
 Assert-True ($compatibility -match 'QStringLiteral\("reasoning"\).*QStringLiteral\("effort"\).*QStringLiteral\("low"\)') 'Compatibility analysis does not use low reasoning for its required web research.'
 Assert-True ($plugin -match 'CancelNetworkRequests\(\)') 'Network requests are not cancelled during shutdown.'
 Assert-True ($installer -match 'HasValidMicrosoftSignature') 'Downloaded prerequisites are not signature checked.'
-Assert-True (($installer -match '#define AppVersion "1\.1\.4 Volume Speech Test 2"') -and ($installer -match 'OutputBaseFilename=AccessibleStudio-1\.1\.4-Volume-Speech-Test-2-Setup') -and ($installer -notmatch '1\.1\.3-test')) 'The installer is not clearly identified as the 1.1.4 volume speech test build.'
+Assert-True (($installer -match '#define AppVersion "1\.1\.4"') -and ($installer -match 'OutputBaseFilename=AccessibleStudio-1\.1\.4-Setup') -and ($installer -notmatch '1\.1\.3-test')) 'The installer is not clearly identified as the 1.1.4 release build.'
 Assert-True (($installer -match 'IndependentProjectNotice') -and ($installer -match 'BDA542EA-4E63-4F03-9F5B-B7A8CD8E470B') -and ($installer -match 'RemoveAccessibleObsStudioLegacy\.ps1') -and ($installer -match '6934DC32-5675-4735-B08A-0DED7B2CBD79')) 'The Accessible Studio transition notice, legacy cleanup, or new installer identity is incomplete.'
 
 Write-Host 'Hardening source invariants passed.'
