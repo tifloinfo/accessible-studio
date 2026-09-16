@@ -24,7 +24,7 @@ Por fuente conserva distribuciones de tamaño fijo del nivel RMS, observaciones 
 
 Solo considera tipos que probablemente sean entradas en directo, como micrófonos y capturas directas de entrada. Compara la mediana RMS activa, el pasaje habitual, con el percentil 95, el pasaje fuerte. La diferencia es la variación dinámica.
 
-Recomienda compresión únicamente si hay 45 segundos activos, no cambiaron el control ni los filtros, es una probable entrada en directo, no existe compresor —aunque esté desactivado— y la variación alcanza el mínimo configurado.
+Recomienda compresión únicamente si hay 45 segundos de señal activa, no cambiaron el volumen ni los filtros, la fuente es una probable entrada en directo y la variación alcanza el mínimo configurado. Si ya hay un compresor o limitador, aunque esté desactivado, no hace esta recomendación. El umbral se calcula con el nivel anterior al control de volumen. El nuevo compresor se añade después de los filtros existentes.
 
 El umbral propuesto es la mediana más 5 dB, redondeado y limitado entre −24 y −10 dB. Ataque: 6 ms; liberación: 100 ms; ganancia de salida: 0 dB. La relación es adaptativa: 2:1 por debajo de 10 dB, 2,5:1 desde 10 hasta menos de 14 dB y el máximo configurado desde 14 dB. Los valores predeterminados son 8 dB de variación mínima y 3:1 de máximo.
 

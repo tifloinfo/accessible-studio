@@ -1,5 +1,5 @@
 #define AppName "Accessible Studio"
-#define AppVersion "1.1.3"
+#define AppVersion "1.1.4 Volume Speech Test 2"
 #define Publisher "Tiflo.Info"
 #define Website "https://tiflo.info"
 #define ObsWebsite "https://obsproject.com/download"
@@ -21,7 +21,7 @@ DisableProgramGroupPage=yes
 DisableWelcomePage=no
 LicenseFile=..\LICENSE.txt
 OutputDir=..\..\outputs
-OutputBaseFilename=AccessibleStudio-1.1.3-Setup
+OutputBaseFilename=AccessibleStudio-1.1.4-Volume-Speech-Test-2-Setup
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequired=admin
@@ -34,7 +34,7 @@ SetupIconFile=
 CloseApplications=no
 RestartApplications=no
 UninstallDisplayName={#AppName} {#AppVersion}
-VersionInfoVersion=1.1.3.0
+VersionInfoVersion=1.1.4.2
 VersionInfoCompany={#Publisher}
 VersionInfoDescription={#AppName} installer
 VersionInfoCopyright=Copyright (C) 2026 {#Publisher}
@@ -222,10 +222,15 @@ ukrainian.RemovingLegacy=Видалення Accessible OBS Studio та його 
 ukrainian.LegacyUninstallError=Не вдалося безпечно видалити Accessible OBS Studio. Accessible Studio не встановлено.
 ukrainian.LegacyCleanupError=Не вдалося безпечно видалити старі налаштування Accessible OBS Studio. Accessible Studio не встановлено.
 
+[InstallDelete]
+Type: files; Name: "{app}\bin\64bit\accessible-studio-cef-relauncher.exe"
+Type: files; Name: "{app}\CEF-ACCESSIBILITY-TEST-NOTES.md"
+
 [Files]
 Source: "..\package\bin\64bit\accessible-studio.dll"; DestDir: "{app}\bin\64bit"; Flags: ignoreversion
 Source: "..\package\data\*"; DestDir: "{app}\data"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\PROJECT_README.md"; DestDir: "{app}"; DestName: "README.md"; Flags: ignoreversion
+Source: "..\RELIABILITY-TEST-NOTES.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\docs\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE-GPL-2.0.txt"; DestDir: "{app}"; Flags: ignoreversion
@@ -780,14 +785,6 @@ begin
   InstallProgressPage.SetProgress(0, 100);
   InstallProgressPage.Show;
   try
-    if not RemoveLegacyInstallation then
-    begin
-      if FileExists(PathFromCommandLine(LegacyUninstallCommand)) then
-        Result := CustomMessage('LegacyUninstallError')
-      else
-        Result := CustomMessage('LegacyCleanupError');
-      Exit;
-    end;
     InstallProgressPage.SetProgress(5, 100);
     if not VCRuntimeInstalled then
     begin
@@ -855,9 +852,22 @@ begin
       end;
       if ResultCode = 3010 then NeedsRestart := True;
     end;
+    if not RemoveLegacyInstallation then
+    begin
+      if FileExists(PathFromCommandLine(LegacyUninstallCommand)) then
+        Result := CustomMessage('LegacyUninstallError')
+      else
+        Result := CustomMessage('LegacyCleanupError');
+      Exit;
+    end;
     InstallProgressPage.SetText(CustomMessage('StartingPluginInstall'), '');
     InstallProgressPage.SetProgress(100, 100);
   finally
     InstallProgressPage.Hide;
   end;
+end;
+
+function InitializeUninstall: Boolean;
+begin
+  Result := WaitForObsToClose;
 end;

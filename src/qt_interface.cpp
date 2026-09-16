@@ -125,7 +125,7 @@ static void ShowAdvancedSoundSettings(){
 }
 
 class QtHotkeyEditorDialog final:public QDialog{
-    QLineEdit *search{};QtCommandList *commands{};QCheckBox *allowObsHotkeyControl{};QPushButton *editButton{},*removeButton{};QLabel *status{};bool closing{},originalAllowObsHotkeyControl{};
+    QLineEdit *search{};QtCommandList *commands{};QCheckBox *allowObsHotkeyControl{};QPushButton *editButton{},*removeButton{};QLabel *status{};bool closing{},originalAllowObsHotkeyControl{};uint64_t editingGeneration{obsEditingGeneration};config *editingProfile{api.profile_config()};
     int selectedIndex() const{QListWidgetItem *item=commands->currentItem();return item?item->data(Qt::UserRole).toInt():-1;}
     void setStatus(const QString &message){if(status->text()!=message)status->setText(message);}
     void announce(const QString &message){setStatus(message);QAccessibleAnnouncementEvent event(this,message);event.setPoliteness(QAccessible::AnnouncementPoliteness::Assertive);QAccessible::updateAccessibility(&event);}
@@ -136,7 +136,7 @@ class QtHotkeyEditorDialog final:public QDialog{
     void editSelected(){int selected=selectedIndex();if(selected<0){QApplication::beep();return;}QtHotkeyAssignmentDialog dialog(static_cast<size_t>(selected),this);if(dialog.exec()==QDialog::Accepted)updateVisibleItems();}
     void removeSelected(){int selected=selectedIndex();if(selected<0){QApplication::beep();return;}if(hotkeys[static_cast<size_t>(selected)].bindings.empty()){announce(LText(LocalText::NoShortcutsToRemove));QApplication::beep();return;}QString command=commands->currentItem()->data(COMMAND_TEXT_ROLE).toString();hotkeys[static_cast<size_t>(selected)].bindings.clear();updateCurrentItem();setStatus(LText(LocalText::RemovedAllShortcuts).arg(command));}
     bool dirty() const{return EditorDirty()||allowObsHotkeyControl->isChecked()!=originalAllowObsHotkeyControl;}
-    bool saveAll(){if(SaveEditorChanges(this)!=EditorSaveResult::Saved)return false;bool allow=allowObsHotkeyControl->isChecked();if(allow!=originalAllowObsHotkeyControl&&!SaveObsHotkeyManagementPreference(allow)){QMessageBox::critical(this,QStringLiteral("Accessible Studio"),LText(LocalText::HotkeyPolicySaveFailure));return false;}originalAllowObsHotkeyControl=allow;return true;}
+    bool saveAll(){if(editingGeneration!=obsEditingGeneration||editingProfile!=api.profile_config()||!ValidateEditorBindings()){QMessageBox::warning(this,QStringLiteral("Accessible Studio"),ReliabilityText::StaleEditor());return false;}if(SaveEditorChanges(this)!=EditorSaveResult::Saved)return false;bool allow=allowObsHotkeyControl->isChecked();if(allow!=originalAllowObsHotkeyControl&&!SaveObsHotkeyManagementPreference(allow)){QMessageBox::critical(this,QStringLiteral("Accessible Studio"),LText(LocalText::HotkeyPolicySaveFailure));return false;}originalAllowObsHotkeyControl=allow;return true;}
     void discard(){for(Hotkey &hotkey:hotkeys)hotkey.bindings=hotkey.originalBindings;allowObsHotkeyControl->setChecked(originalAllowObsHotkeyControl);}
 protected:
     void closeEvent(QCloseEvent *event) override{
@@ -145,7 +145,7 @@ protected:
     void reject() override{close();}
 public:
     explicit QtHotkeyEditorDialog(QWidget *parent):QDialog(parent){
-        setWindowTitle(QStringLiteral("Accessible Studio — ")+LText(LocalText::ShortcutEditor));setAttribute(Qt::WA_DeleteOnClose);
+        setWindowTitle(QStringLiteral("Accessible Studio — ")+LText(LocalText::ShortcutEditor));setAttribute(Qt::WA_DeleteOnClose);setWindowModality(Qt::WindowModal);
         auto *layout=new QVBoxLayout(this);auto *searchLabel=new QLabel(LText(LocalText::FindCommands),this);search=new QLineEdit(this);search->setAccessibleName(LAccessibleLabel(LocalText::FindCommands));searchLabel->setBuddy(search);layout->addWidget(searchLabel);layout->addWidget(search);
         auto *headers=new QHBoxLayout;auto *commandHeader=new QLabel(LText(LocalText::Command),this);auto *shortcutHeader=new QLabel(LText(LocalText::AssignedShortcuts),this);shortcutHeader->setAlignment(Qt::AlignRight);headers->addWidget(commandHeader,2);headers->addWidget(shortcutHeader,1);layout->addLayout(headers);
         commands=new QtCommandList(this);commands->setItemDelegate(new QtHotkeyListDelegate(commands));commands->setAccessibleName(LText(LocalText::Commands));commands->setAccessibleDescription(LText(LocalText::CommandListHelp));commands->setSelectionMode(QAbstractItemView::SingleSelection);commands->setEditTriggers(QAbstractItemView::NoEditTriggers);commands->setTabKeyNavigation(false);layout->addWidget(commands);

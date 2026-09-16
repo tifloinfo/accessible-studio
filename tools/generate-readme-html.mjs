@@ -63,9 +63,11 @@ for (const [sourcePath, destinationPath, language, skipText] of documents) {
   let body = marked.parse(source, { gfm: true });
   body = body.replaceAll('src="assets/', 'src="../assets/');
   if (sourcePath === "PROJECT_README.md") {
-    body = body.replaceAll('href="docs/', 'href="');
+    body = body.replaceAll('href="docs/', 'href="').replaceAll('href="LICENSE', 'href="../LICENSE');
   }
 
+  body = body.replaceAll('href="../README.md"', 'href="README.en-US.html"');
+  body = body.replace(/href="(README\.[a-z]{2}-[A-Z]{2})\.md"/g, 'href="$1.html"');
   const titleMatch = source.match(/^#\s+(.+)$/m);
   const title = titleMatch?.[1] ?? "Accessible Studio";
   const html = `<!doctype html>

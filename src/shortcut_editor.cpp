@@ -28,6 +28,15 @@ enum class EditorSaveResult{Saved,Cancelled,Failed};
 
 static bool SameLogicalCommand(const Hotkey &left,const Hotkey &right){return left.name==right.name&&left.description==right.description&&left.context==right.context;}
 
+static bool ValidateEditorBindings(){
+    struct Snapshot{std::vector<Hotkey> values;};Snapshot snapshot;
+    api.enum_hotkeys([](void *p,hotkey_id id,obs_hotkey *h){auto &items=static_cast<Snapshot*>(p)->values;Hotkey item;item.id=id;item.name=api.hk_name(h)?api.hk_name(h):"";item.type=api.hk_type(h);items.push_back(std::move(item));return true;},&snapshot);
+    api.enum_bindings([](void *p,size_t,obs_hotkey_binding *binding){auto &items=static_cast<Snapshot*>(p)->values;auto found=std::find_if(items.begin(),items.end(),[&](const Hotkey &h){return h.id==api.binding_id(binding);});if(found!=items.end())found->bindings.push_back(api.binding_combo(binding));return true;},&snapshot);
+    if(snapshot.values.size()!=hotkeys.size())return false;
+    for(const Hotkey &saved:hotkeys){auto found=std::find_if(snapshot.values.begin(),snapshot.values.end(),[&](const Hotkey &h){return h.id==saved.id&&h.name==saved.name&&h.type==saved.type;});if(found==snapshot.values.end()||!BindingListsEqual(found->bindings,saved.originalBindings))return false;}
+    return true;
+}
+
 static EditorSaveResult SaveEditorChanges(QWidget *parent){
     std::vector<size_t> changed;for(size_t index=0;index<hotkeys.size();++index)if(!BindingListsEqual(hotkeys[index].bindings,hotkeys[index].originalBindings))changed.push_back(index);if(changed.empty())return EditorSaveResult::Saved;
     config *cfg=api.profile_config?api.profile_config():nullptr;auto rollback=[&]{bool rollbackConfiguration=false;for(size_t index:changed){Hotkey original=hotkeys[index];original.bindings=hotkeys[index].originalBindings;Persist(original,rollbackConfiguration);}if(rollbackConfiguration&&cfg)api.config_save_safe(cfg,"tmp",nullptr);if(api.frontend_save)api.frontend_save();};

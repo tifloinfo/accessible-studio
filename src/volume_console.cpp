@@ -70,13 +70,14 @@ public:
     explicit VolumeConsoleDialog(QWidget *parent,const QString &initialSourceUuid={}):QDialog(parent){
         setAttribute(Qt::WA_DeleteOnClose);setWindowTitle(VText(VOLUME_CONSOLE_TITLE));setAccessibleDescription(VText(SLIDER_INSTRUCTIONS));setWindowModality(Qt::ApplicationModal);setModal(true);resize(800,460);setMinimumSize(460,360);
         AudibleMeterConsoleOpened();
+        connect(qApp,&QApplication::focusChanged,this,[this](QWidget*,QWidget *now){int index=EntryIndex(now);AudibleMeterConsoleFocusSource(index>=0?sources_[static_cast<size_t>(index)].uuid:QString{});});
         auto *outer=new QVBoxLayout(this);sourceViewButton_=new QPushButton(this);sourceViewButton_->setAutoDefault(false);sourceViewButton_->setDefault(false);sourceViewButton_->installEventFilter(this);UpdateSourceViewButton();outer->addWidget(sourceViewButton_);scroll_=new QScrollArea(this);scroll_->setWidgetResizable(true);scroll_->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);scroll_->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);scroll_->setFocusPolicy(Qt::NoFocus);outer->addWidget(scroll_);
         panel_=new QWidget(scroll_);sourceLayout_=new QHBoxLayout(panel_);sourceLayout_->setAlignment(Qt::AlignLeft);emptyMessage_=new QLabel(VText(NO_AUDIO_SOURCES),panel_);emptyMessage_->setWordWrap(true);sourceLayout_->addWidget(emptyMessage_);sourceLayout_->addStretch(1);scroll_->setWidget(panel_);
         buttons_=new QDialogButtonBox(QDialogButtonBox::Close,this);if(QPushButton *close=buttons_->button(QDialogButtonBox::Close))close->setText(QString::fromWCharArray(Tr(UiText::Close)));connect(buttons_,&QDialogButtonBox::rejected,this,&QDialog::reject);connect(buttons_,&QDialogButtonBox::accepted,this,&QDialog::accept);outer->addWidget(buttons_);
         connect(sourceViewButton_,&QPushButton::clicked,this,[this]{ToggleSourceView();});
         InitializeSources(CurrentMixerEntries(true));refreshTimer_=new QTimer(this);refreshTimer_->setInterval(500);connect(refreshTimer_,&QTimer::timeout,this,[this]{RefreshFromObs();});refreshTimer_->start();if(!initialSourceUuid.isEmpty()&&FocusSource(initialSourceUuid)){}else if(!sources_.empty())FocusIndex(0);else sourceViewButton_->setFocus(Qt::OtherFocusReason);
     }
-    ~VolumeConsoleDialog() override{AudibleMeterConsoleClosed();ReleaseSources();}
+    ~VolumeConsoleDialog() override{disconnect(qApp,nullptr,this,nullptr);AudibleMeterConsoleClosed();ReleaseSources();}
     bool FocusSource(const QString &uuid){
         auto findIndex=[this,&uuid]{for(size_t index=0;index<sources_.size();++index)if(sources_[index].uuid==uuid)return static_cast<int>(index);return -1;};
         int index=findIndex();if(index<0&&activeOnlyState_){activeOnlyState_=false;UpdateSourceViewButton();RebuildSources(false);index=findIndex();}if(index<0)return false;
@@ -102,7 +103,7 @@ protected:
         }
         if(modifiers==Qt::NoModifier){
             if(keyEvent->key()==Qt::Key_Left){FocusIndex(index-1);return true;}if(keyEvent->key()==Qt::Key_Right){FocusIndex(index+1);return true;}
-            if(watched==sources_[static_cast<size_t>(index)].slider&&(keyEvent->key()==Qt::Key_Up||keyEvent->key()==Qt::Key_Down)){VolumeEntry &entry=sources_[static_cast<size_t>(index)];int step=keyEvent->key()==Qt::Key_Up?1:-1;entry.slider->setValue(std::clamp(entry.slider->value()+step,-100,entry.maximumValue));return true;}
+            if(watched==sources_[static_cast<size_t>(index)].slider&&(keyEvent->key()==Qt::Key_Up||keyEvent->key()==Qt::Key_Down)){VolumeEntry &entry=sources_[static_cast<size_t>(index)];int step=keyEvent->key()==Qt::Key_Up?1:-1;entry.slider->setValue(std::clamp(entry.slider->value()+step,-100,entry.maximumValue));QueueVolumeAnnouncement(entry.slider);return true;}
             if(keyEvent->key()==Qt::Key_Home&&watched==sources_[static_cast<size_t>(index)].slider){QSlider *slider=sources_[static_cast<size_t>(index)].slider;if(slider->value()!=0)slider->setValue(0);else Announce(index);return true;}
             if(keyEvent->key()==Qt::Key_Return||keyEvent->key()==Qt::Key_Enter){const VolumeEntry &entry=sources_[static_cast<size_t>(index)];if(watched==entry.outputButton){ToggleOutput(index);return true;}if(watched==entry.monitoringButton){ToggleMonitoring(index);return true;}}
             int direct=DirectIndex(keyEvent->key());if(direct>=0){FocusIndex(direct);return true;}
@@ -114,11 +115,23 @@ protected:
         Qt::KeyboardModifiers modifiers=event->modifiers()&~Qt::KeypadModifier;if(modifiers==Qt::NoModifier){if(event->key()==Qt::Key_Escape||event->key()==Qt::Key_Return||event->key()==Qt::Key_Enter){reject();return;}int direct=DirectIndex(event->key());if(direct>=0){FocusIndex(direct);return;}}QDialog::keyPressEvent(event);
     }
 private:
+    void QueueVolumeAnnouncement(QSlider *slider){
+        // Explicit feedback for JAWS and NVDA: report the final dB value
+        // after key handling and the OBS write, including at the range limits.
+        // Coalesce pending repeats and discard speech after focus moves away.
+        const uint64_t generation=++volumeAnnouncementGeneration_;
+        QTimer::singleShot(0,slider,[this,slider,generation]{
+            if(generation!=volumeAnnouncementGeneration_||!slider->hasFocus())return;
+            QAccessibleAnnouncementEvent announcement(slider,DbValueText(slider->value()));
+            announcement.setPoliteness(QAccessible::AnnouncementPoliteness::Assertive);
+            QAccessible::updateAccessibility(&announcement);
+        });
+    }
     static int DirectIndex(int key){if(key>=Qt::Key_1&&key<=Qt::Key_9)return key-Qt::Key_1;if(key==Qt::Key_0)return 9;return -1;}
     void UpdateSourceViewButton(){QString text=VText(activeOnlyState_?SHOW_ALL_SOURCES:SHOW_ACTIVE_SOURCES);sourceViewButton_->setText(text);sourceViewButton_->setAccessibleName(text);}
     void ToggleSourceView(){activeOnlyState_=!activeOnlyState_;UpdateSourceViewButton();RebuildSources(activeOnlyState_);}
     static bool IndependentMonitoringMute(){uint32_t version=api.get_version();uint32_t major=(version>>24)&0xFF,minor=(version>>16)&0xFF;return major>32||(major==32&&minor>=2);}
-    int EntryIndex(QObject *object) const{for(size_t index=0;index<sources_.size();++index)if(object==sources_[index].slider||object==sources_[index].outputButton||object==sources_[index].monitoringButton)return static_cast<int>(index);return -1;}
+    int EntryIndex(QObject *object) const{if(!object)return -1;for(size_t index=0;index<sources_.size();++index)if(object==sources_[index].slider||object==sources_[index].outputButton||object==sources_[index].monitoringButton)return static_cast<int>(index);return -1;}
     int FocusedIndex() const{QWidget *focus=QApplication::focusWidget();return EntryIndex(focus);}
     QString Announcement(int index) const{const VolumeEntry &entry=sources_[static_cast<size_t>(index)];return QStringLiteral("%1, %2 %3. %4: %5. %6: %7.").arg(entry.name).arg(VText(VOLUME_TEXT)).arg(DbValueText(entry.value)).arg(VText(OUTPUT_PARAMETER_TEXT)).arg(VText(entry.outputEnabled?ON_TEXT:OFF_TEXT)).arg(VText(MONITORING_PARAMETER_TEXT)).arg(VText(entry.monitoringEnabled?ON_TEXT:OFF_TEXT));}
     void Announce(int index){if(index<0||index>=static_cast<int>(sources_.size()))return;QAccessibleAnnouncementEvent announcement(this,Announcement(index));announcement.setPoliteness(QAccessible::AnnouncementPoliteness::Assertive);QAccessible::updateAccessibility(&announcement);}
@@ -149,10 +162,11 @@ private:
     }
     void InitializeSources(std::vector<VolumeEntry> entries){sources_=std::move(entries);emptyMessage_->setText(VText(activeOnlyState_?NO_ACTIVE_AUDIO_SOURCES:NO_AUDIO_SOURCES));emptyMessage_->setVisible(sources_.empty());for(size_t index=0;index<sources_.size();++index){CreateControls(sources_[index]);sourceLayout_->insertWidget(static_cast<int>(index),sources_[index].column);}}
     void RebuildSources(bool activeOnly){
-        QString focusedUuid;int focused=FocusedIndex();if(focused>=0)focusedUuid=sources_[static_cast<size_t>(focused)].uuid;
+        QPointer<QWidget> previousFocus=QApplication::focusWidget();QString focusedUuid;int focused=FocusedIndex();int focusedPart=0;if(focused>=0){const auto &entry=sources_[static_cast<size_t>(focused)];focusedUuid=entry.uuid;focusedPart=previousFocus==entry.outputButton?1:previousFocus==entry.monitoringButton?2:0;}
         ReleaseSources();InitializeSources(CurrentMixerEntries(activeOnly));
         int replacement=-1;for(size_t index=0;index<sources_.size();++index)if(sources_[index].uuid==focusedUuid){replacement=static_cast<int>(index);break;}
-        if(replacement>=0)FocusIndex(replacement);else if(!sources_.empty())FocusIndex(0);else sourceViewButton_->setFocus(Qt::OtherFocusReason);
+        if(focused<0){if(previousFocus&&previousFocus->isVisible()&&previousFocus->isEnabled())previousFocus->setFocus(Qt::OtherFocusReason);return;}
+        if(replacement>=0){auto &entry=sources_[static_cast<size_t>(replacement)];QWidget *target=focusedPart==1?static_cast<QWidget*>(entry.outputButton.data()):focusedPart==2?static_cast<QWidget*>(entry.monitoringButton.data()):static_cast<QWidget*>(entry.slider.data());if(target)target->setFocus(Qt::OtherFocusReason);}else if(!sources_.empty())FocusIndex(std::min(focused,static_cast<int>(sources_.size())-1));else sourceViewButton_->setFocus(Qt::OtherFocusReason);
     }
     void RefreshFromObs(){
         std::vector<VolumeEntry> current=CurrentMixerEntries(activeOnlyState_);
@@ -173,6 +187,7 @@ private:
             if(entry.monitoringEnabled!=monitoring||entry.outputEnabled!=output){entry.monitoringEnabled=monitoring;entry.outputEnabled=output;UpdateRoutingVisuals(entry);}
         }
     }
+    uint64_t volumeAnnouncementGeneration_{};
     bool activeOnlyState_{true};QPushButton *sourceViewButton_{};QScrollArea *scroll_{};QWidget *panel_{};QHBoxLayout *sourceLayout_{};QLabel *emptyMessage_{};QDialogButtonBox *buttons_{};QTimer *refreshTimer_{};std::vector<VolumeEntry> sources_;
 };
 

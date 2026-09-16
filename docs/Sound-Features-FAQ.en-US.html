@@ -57,10 +57,10 @@
 <li>the source supplied at least 45 seconds of active audio;</li>
 <li>its fader or filter chain did not change during the test;</li>
 <li>it is a likely live-input source;</li>
-<li>no compressor, enabled or disabled, already exists; and</li>
+<li>no compressor or limiter, enabled or disabled, already exists; and</li>
 <li>the dynamic spread meets the configured minimum, 8 dB by default.</li>
 </ul>
-<p>The proposed threshold is the median plus 5 dB, rounded and limited to the range −24 through −10 dB. Attack is 6 ms, release is 100 ms, and output gain is 0 dB. The ratio adapts to the spread: 2:1 below 10 dB, 2.5:1 from 10 dB to below 14 dB, and the configured maximum at 14 dB or more. The default maximum is 3:1.</p>
+<p>The RMS measurement is corrected for the OBS fader gain. The compressor is inserted after existing filters, so its input matches the measured signal. When both new filters are selected, compression is inserted before the new limiter. The proposed threshold is the median plus 5 dB, rounded and limited to the range −24 through −10 dB. Attack is 6 ms, release is 100 ms, and output gain is 0 dB. The ratio adapts to the spread: 2:1 below 10 dB, 2.5:1 from 10 dB to below 14 dB, and the configured maximum at 14 dB or more. The default maximum is 3:1.</p>
 <h3>Can Sound Doctor reliably tell speech from music?</h3>
 <p>No. The available level measurements describe loudness and dynamics, not semantic content. Source type is used only as a likely-live-input heuristic. A microphone can carry music and an application capture can carry speech. For that reason, the report explicitly advises leaving a compressor recommendation unselected when the source is primarily music.</p>
 <h3>When does it recommend a limiter?</h3>

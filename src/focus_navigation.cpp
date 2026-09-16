@@ -206,6 +206,17 @@ static void FocusMediaControlsHotkey(void*,hotkey_id,obs_hotkey*,bool pressed){
 
 enum class SourceSelectionResult{Ready,Cancelled,Unavailable};
 static QPersistentModelIndex pendingFitSource;
+static QByteArray pendingFitBefore,pendingFitAfter;
+static uint64_t pendingFitGeneration{};
+
+static QByteArray CurrentTransformSnapshot(){
+    if(!api.frontend_current_scene||!api.frontend_preview_scene||!api.scene_from_source||!api.scene_save_transforms||!api.scene_load_transforms)return {};
+    void *source=api.studio_mode_active()?api.frontend_preview_scene():api.frontend_current_scene();if(!source)return {};
+    void *scene=api.scene_from_source(source);obs_data *state=scene?api.scene_save_transforms(scene,true):nullptr;
+    QByteArray result;if(state){const char *json=api.data_json(state);if(json)result=QJsonDocument::fromJson(json).toJson(QJsonDocument::Compact);api.data_release(state);}api.source_release(source);return result;
+}
+static void ClearPendingFit(){pendingFitSource=QPersistentModelIndex();pendingFitBefore.clear();pendingFitAfter.clear();}
+
 
 static bool CollectVideoSourceName(void *parameter,void *source){
     constexpr uint32_t VIDEO_FLAG=1u<<0;if(!source||(api.source_output_flags(source)&VIDEO_FLAG)==0)return true;
@@ -230,9 +241,16 @@ static void RestorePendingFitSelection(){
 }
 
 static void FinishFitQualityValidation(bool acceptable){
-    if(acceptable){pendingFitSource=QPersistentModelIndex();QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitQualityAccepted)+QStringLiteral("\n\n")+LText(LocalText::Undo));return;}
-    QAction *undo=obsMainWindow?obsMainWindow->findChild<QAction*>(QStringLiteral("actionMainUndo")):nullptr;if(!undo||!undo->isEnabled()){pendingFitSource=QPersistentModelIndex();QMessageBox::warning(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitUndoFailed));return;}undo->trigger();RestorePendingFitSelection();
-    QAction *center=obsMainWindow->findChild<QAction*>(QStringLiteral("actionCenterToScreen"));if(!center||!center->isEnabled()){pendingFitSource=QPersistentModelIndex();QMessageBox::warning(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitCenterFailed));return;}center->trigger();pendingFitSource=QPersistentModelIndex();QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitQualityFallback)+QStringLiteral("\n\n")+LText(LocalText::Undo));
+    if(shuttingDown){ClearPendingFit();return;}
+    if(pendingFitGeneration!=obsEditingGeneration||!pendingFitSource.isValid()||pendingFitBefore.isEmpty()||pendingFitAfter.isEmpty()||CurrentTransformSnapshot()!=pendingFitAfter){
+        ClearPendingFit();QMessageBox::warning(obsMainWindow,QStringLiteral("Accessible Studio"),ReliabilityText::FitChanged());return;
+    }
+    if(acceptable){ClearPendingFit();QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitQualityAccepted)+QStringLiteral("\n\n")+LText(LocalText::Undo));return;}
+    // Restore a verified snapshot. Never invoke OBS's general Undo stack.
+    api.scene_load_transforms(pendingFitBefore.constData());RestorePendingFitSelection();
+    QAction *center=obsMainWindow->findChild<QAction*>(QStringLiteral("actionCenterToScreen"));
+    if(!center||!center->isEnabled()){ClearPendingFit();QMessageBox::warning(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitCenterFailed));return;}
+    center->trigger();if(api.frontend_save)api.frontend_save();ClearPendingFit();QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::FitQualityFallback)+QStringLiteral("\n\n")+LText(LocalText::Undo));
 }
 
 static void ShowSuggestedFixes(const std::vector<std::string> &allowed){
@@ -241,7 +259,7 @@ static void ShowSuggestedFixes(const std::vector<std::string> &allowed){
     QDialog dialog(obsMainWindow);dialog.setWindowTitle(QStringLiteral("Accessible Studio - ")+CText(CanvasText::SuggestedFixes));dialog.setModal(true);auto *layout=new QVBoxLayout(&dialog);auto *list=new QListWidget(&dialog);list->setAccessibleName(LText(LocalText::SuggestedActions));list->setSelectionMode(QAbstractItemView::SingleSelection);int firstEnabled=-1;
     for(const auto &spec:specs){if(!allowed.empty()&&std::find(allowed.begin(),allowed.end(),spec.objectName)==allowed.end())continue;QAction *action=obsMainWindow->findChild<QAction*>(QString::fromLatin1(spec.objectName));auto *item=new QListWidgetItem(LText(LocalText::RiskFormat).arg(LText(spec.label),LText(spec.risk)),list);item->setData(Qt::UserRole,QString::fromLatin1(spec.objectName));if(action&&action->isEnabled()){if(firstEnabled<0)firstEnabled=list->row(item);}else{QString unavailable=LText(LocalText::UnavailableAction);item->setFlags(item->flags()&~Qt::ItemIsEnabled&~Qt::ItemIsSelectable);item->setToolTip(unavailable);item->setData(Qt::AccessibleDescriptionRole,unavailable);}}
     layout->addWidget(list);auto *explanation=new QLabel(LText(LocalText::NothingChanges),&dialog);explanation->setWordWrap(true);layout->addWidget(explanation);auto *buttons=new QDialogButtonBox(&dialog);QPushButton *apply=buttons->addButton(LText(LocalText::ApplySelected),QDialogButtonBox::AcceptRole);QPushButton *explain=buttons->addButton(LText(LocalText::Explain),QDialogButtonBox::HelpRole);buttons->addButton(LText(LocalText::Cancel),QDialogButtonBox::RejectRole);auto updateApply=[&]{QListWidgetItem *item=list->currentItem();apply->setEnabled(item&&item->flags().testFlag(Qt::ItemIsEnabled));};QObject::connect(buttons,&QDialogButtonBox::accepted,&dialog,&QDialog::accept);QObject::connect(buttons,&QDialogButtonBox::rejected,&dialog,&QDialog::reject);QObject::connect(explain,&QPushButton::clicked,[&]{QMessageBox::information(&dialog,CText(CanvasText::SuggestedFixes),LText(LocalText::ExplainActions));});QObject::connect(list,&QListWidget::currentItemChanged,[&](QListWidgetItem*,QListWidgetItem*){updateApply();});QObject::connect(list,&QListWidget::itemActivated,[&](QListWidgetItem *item){if(item&&item->flags().testFlag(Qt::ItemIsEnabled))dialog.accept();});layout->addWidget(buttons);dialog.resize(620,520);if(firstEnabled>=0)list->setCurrentRow(firstEnabled);updateApply();list->setFocus(Qt::OtherFocusReason);if(dialog.exec()!=QDialog::Accepted)return;
-    QListWidgetItem *item=list->currentItem();QString actionId=item?item->data(Qt::UserRole).toString():QString();QAction *action=item?obsMainWindow->findChild<QAction*>(actionId):nullptr;QString result;if(action&&action->isEnabled()){if(actionId==QStringLiteral("actionFitToScreen")){QAbstractItemView *sources=obsMainWindow->findChild<QAbstractItemView*>(QStringLiteral("sources"));pendingFitSource=sources?QPersistentModelIndex(sources->currentIndex()):QPersistentModelIndex();action->trigger();if(!StartFitQualityValidation())FinishFitQualityValidation(false);return;}action->trigger();result=LText(LocalText::Applied).arg(item->text())+QStringLiteral("\n\n")+LText(LocalText::Undo);}else result=item?LText(LocalText::Skipped).arg(item->text()):LText(LocalText::NoActionsApplied);QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),result);
+    QListWidgetItem *item=list->currentItem();QString actionId=item?item->data(Qt::UserRole).toString():QString();QAction *action=item?obsMainWindow->findChild<QAction*>(actionId):nullptr;QString result;if(action&&action->isEnabled()){if(actionId==QStringLiteral("actionFitToScreen")){QAbstractItemView *sources=obsMainWindow->findChild<QAbstractItemView*>(QStringLiteral("sources"));pendingFitSource=sources?QPersistentModelIndex(sources->currentIndex()):QPersistentModelIndex();pendingFitGeneration=obsEditingGeneration;pendingFitBefore=CurrentTransformSnapshot();if(pendingFitBefore.isEmpty()){ClearPendingFit();QMessageBox::warning(obsMainWindow,QStringLiteral("Accessible Studio"),LText(LocalText::UnavailableAction));return;}action->trigger();pendingFitAfter=CurrentTransformSnapshot();if(api.studio_mode_active()){ClearPendingFit();QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),ReliabilityText::PreviewFit());return;}if(!StartFitQualityValidation())FinishFitQualityValidation(false);return;}action->trigger();result=LText(LocalText::Applied).arg(item->text())+QStringLiteral("\n\n")+LText(LocalText::Undo);}else result=item?LText(LocalText::Skipped).arg(item->text()):LText(LocalText::NoActionsApplied);QMessageBox::information(obsMainWindow,QStringLiteral("Accessible Studio"),result);
 }
 
 static constexpr const char *ACCESSIBLE_OBS_BUILD_ID="1.1.3";
@@ -284,4 +302,4 @@ static void ReviewKeyboardShortcutConflicts(){
 
 static bool profileReviewQueued{};
 static void QueueProfileReview(){if(profileReviewQueued||!PluginEventTarget())return;profileReviewQueued=true;QMetaObject::invokeMethod(PluginEventTarget(),[]{profileReviewQueued=false;EnsureSafeHotkeyFocusDefault();ReviewKeyboardShortcutConflicts();},Qt::QueuedConnection);}
-static void FrontendEvent(int event,void*){constexpr int PROFILE_CHANGED=15,FINISHED_LOADING=26;if(event==PROFILE_CHANGED||event==FINISHED_LOADING)QueueProfileReview();HandleAccessibilityFrontendEvent(event);HandleAudibleMeterFrontendEvent(event);HandleSoundDoctorFrontendEvent(event);}
+static void FrontendEvent(int event,void*){if(event==8||event==24||event==35||event==36)++obsEditingGeneration;constexpr int PROFILE_CHANGED=15,FINISHED_LOADING=26;if(event==PROFILE_CHANGED||event==FINISHED_LOADING)QueueProfileReview();HandleAccessibilityFrontendEvent(event);HandleAudibleMeterFrontendEvent(event);HandleSoundDoctorFrontendEvent(event);}

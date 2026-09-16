@@ -52,7 +52,7 @@
 <p>Pro Quelle führt Sound Doctor feste Verteilungen für RMS-Pegel, Spitzenbeobachtungen und aktive Zeit sowie Quellidentität, anfänglichen Reglerpegel und einen Fingerabdruck der Filterkette. Vorhandene Kompressor- und Limitereinstellungen werden ebenfalls geprüft. Wörter oder Inhalte werden nicht erkannt; Messungen werden an keinen KI-Dienst gesendet.</p>
 <h3>Wie wird eine Kompressorempfehlung ermittelt?</h3>
 <p>Kompression wird nur für Quellentypen erwogen, die wahrscheinlich Live-Eingänge sind, etwa Mikrofone und direkte Audioeingänge. Sound Doctor vergleicht den Median des aktiven RMS-Pegels, also typische Passagen, mit dem 95. Perzentil, also lauteren Passagen. Die Differenz ist die gemessene Dynamikvariation.</p>
-<p>Eine Empfehlung erscheint nur, wenn die Quelle mindestens 45 Sekunden aktiv war, Regler und Filterkette unverändert blieben, es sich wahrscheinlich um einen Live-Eingang handelt, kein Kompressor vorhanden ist und die Variation den eingestellten Mindestwert erreicht. Auch ein deaktivierter vorhandener Kompressor verhindert ein Duplikat.</p>
+<p>Eine Empfehlung erscheint nur, wenn die Quelle mindestens 45 Sekunden aktiv war, Regler und Filter unverändert blieben, es sich wahrscheinlich um einen Live-Eingang handelt und die Variation den eingestellten Mindestwert erreicht. Ein vorhandener Kompressor oder Limiter verhindert die Empfehlung, auch wenn er deaktiviert ist. Für den Schwellenwert wird der Pegel vor dem Lautstärkeregler verwendet. Der neue Kompressor wird nach den vorhandenen Filtern eingefügt.</p>
 <p>Der vorgeschlagene Schwellenwert ist Median plus 5 dB, gerundet und auf −24 bis −10 dB begrenzt. Attack beträgt 6 ms, Release 100 ms und Ausgangsverstärkung 0 dB. Das Verhältnis ist adaptiv: 2:1 unter 10 dB Variation, 2,5:1 von 10 bis unter 14 dB und ab 14 dB der eingestellte Höchstwert. Standardmäßig sind Mindestvariation 8 dB und Höchstwert 3:1.</p>
 <h3>Kann Sound Doctor Sprache zuverlässig von Musik unterscheiden?</h3>
 <p>Nein. Pegelwerte beschreiben Lautstärke und Dynamik, nicht den Inhalt. Der Quellentyp ist nur ein Hinweis auf einen wahrscheinlichen Live-Eingang. Ein Mikrofon kann Musik und eine Anwendungsaufnahme Sprache übertragen. Deshalb empfiehlt der Bericht, Kompression für hauptsächlich musikalische Quellen nicht auszuwählen.</p>
@@ -99,7 +99,7 @@
 </ul>
 <p>Diese Werte verändern weder die festen OBS-Farbbereiche noch Konsolen-Messtöne, H/J/K/L-Messungen oder die rote Vorreglergrenze.</p>
 <h3>Kann ich Warnungen vorübergehend abschalten?</h3>
-<p>Drücken Sie bei aktivem Audible Meter I. Beim Wiedereinschalten beginnt die Belichtungszeit neu. Konsolen-Messtöne bleiben aktiv. Buchstabenbefehle werden in bearbeitbaren Feldern niemals abgefangen.</p>
+<p>Drücken Sie bei aktivem Audible Meter I. Beim Wiedereinschalten beginnt die Messung der Zeit über dem Warnpegel von vorn. Konsolen-Messtöne bleiben aktiv. Buchstabenbefehle werden in bearbeitbaren Feldern niemals abgefangen.</p>
 <h3>Wofür stehen H, J, K und L?</h3>
 <ul>
 <li>H nennt aktuellen Nachreglerpegel und Bereich der zuletzt in der Konsole fokussierten Quelle.</li>

@@ -1,17 +1,17 @@
-$ErrorActionPreference = 'Stop'
+﻿$ErrorActionPreference = 'Stop'
 
 $root = Split-Path -Parent $PSScriptRoot
-$plugin = Get-Content -LiteralPath (Join-Path $root 'plugin.cpp') -Raw
-$audibleMeter = Get-Content -LiteralPath (Join-Path $root 'src\audible_meter.cpp') -Raw
-$soundDoctor = Get-Content -LiteralPath (Join-Path $root 'src\sound_doctor.cpp') -Raw
-$focusNavigation = Get-Content -LiteralPath (Join-Path $root 'src\focus_navigation.cpp') -Raw
-$shortcutEditor = Get-Content -LiteralPath (Join-Path $root 'src\shortcut_editor.cpp') -Raw
-$qtInterface = Get-Content -LiteralPath (Join-Path $root 'src\qt_interface.cpp') -Raw
-$localizedUi = Get-Content -LiteralPath (Join-Path $root 'src\localized_ui.cpp') -Raw
-$volumeConsole = Get-Content -LiteralPath (Join-Path $root 'src\volume_console.cpp') -Raw
-$canvas = Get-Content -LiteralPath (Join-Path $root 'src\canvas_openai.cpp') -Raw
-$compatibility = Get-Content -LiteralPath (Join-Path $root 'src\compatibility.cpp') -Raw
-$installer = Get-Content -LiteralPath (Join-Path $root 'installer\AccessibleStudio.iss') -Raw
+$plugin = Get-Content -LiteralPath (Join-Path $root 'plugin.cpp') -Raw -Encoding UTF8
+$audibleMeter = Get-Content -LiteralPath (Join-Path $root 'src\audible_meter.cpp') -Raw -Encoding UTF8
+$soundDoctor = Get-Content -LiteralPath (Join-Path $root 'src\sound_doctor.cpp') -Raw -Encoding UTF8
+$focusNavigation = Get-Content -LiteralPath (Join-Path $root 'src\focus_navigation.cpp') -Raw -Encoding UTF8
+$shortcutEditor = Get-Content -LiteralPath (Join-Path $root 'src\shortcut_editor.cpp') -Raw -Encoding UTF8
+$qtInterface = Get-Content -LiteralPath (Join-Path $root 'src\qt_interface.cpp') -Raw -Encoding UTF8
+$localizedUi = Get-Content -LiteralPath (Join-Path $root 'src\localized_ui.cpp') -Raw -Encoding UTF8
+$volumeConsole = Get-Content -LiteralPath (Join-Path $root 'src\volume_console.cpp') -Raw -Encoding UTF8
+$canvas = Get-Content -LiteralPath (Join-Path $root 'src\canvas_openai.cpp') -Raw -Encoding UTF8
+$compatibility = Get-Content -LiteralPath (Join-Path $root 'src\compatibility.cpp') -Raw -Encoding UTF8
+$installer = Get-Content -LiteralPath (Join-Path $root 'installer\AccessibleStudio.iss') -Raw -Encoding UTF8
 $allSource = $plugin + $audibleMeter + $soundDoctor + $focusNavigation + $shortcutEditor + $qtInterface + $localizedUi + $volumeConsole + $canvas + $installer
 
 function Assert-True {
@@ -70,11 +70,11 @@ Assert-True (($soundDoctor -match 'QDialogButtonBox::RejectRole') -and ($soundDo
 Assert-True (($soundDoctor -match 'compressor_filter') -and ($soundDoctor -match 'limiter_filter') -and ($soundDoctor -match 'sound_doctor_managed') -and ($soundDoctor -match 'Sound Doctor – Compressor') -and ($soundDoctor -match 'Sound Doctor – Limiter')) 'Sound Doctor filter inspection or ownership marking is incomplete.'
 Assert-True (($soundDoctor -match 'spread>=minimumSpread') -and ($soundDoctor -match 'spread>=14\.0\?maximumRatio:spread>=10\.0\?std::min\(2\.5,maximumRatio\):2\.0') -and ($soundDoctor -notmatch 'spread>=10\.0&&source->peakEvents') -and ($soundDoctor -match 'limiterAllSources\|\|MicrophoneType')) 'Sound Doctor compressor or limiter recommendation policy is not adaptive and preventive.'
 Assert-True (($soundDoctor -match 'expectedFilterFingerprint') -and ($soundDoctor -match 'FilterFingerprint\(lookup\.source\)!=item\.expectedFilterFingerprint') -and ($soundDoctor -match 'HasFilter\(lookup\.source,type\)')) 'Sound Doctor does not revalidate sources and filter chains before applying changes.'
-Assert-True (($soundDoctor -match 'Kind::Compressor\?2:3') -and ($soundDoctor -match 'attack_time\",6') -and ($soundDoctor -match 'release_time\",100') -and ($soundDoctor -match 'release_time\",60')) 'Sound Doctor does not place or configure managed filters conservatively.'
+Assert-True (($soundDoctor -match 'source_filter_set_order\(lookup.source,filter,3\)') -and ($soundDoctor -match 'attack_time\",6') -and ($soundDoctor -match 'release_time\",100') -and ($soundDoctor -match 'release_time\",60')) 'Sound Doctor does not place or configure managed filters conservatively.'
 Assert-True (($soundDoctor -match 'add_undo_redo') -and ($soundDoctor -match 'RemoveApplied') -and ($soundDoctor -match 'RedoApplied')) 'Sound Doctor changes do not provide OBS undo and redo.'
 Assert-True (($soundDoctor -match 'COLLECTION_CHANGING=35') -and ($soundDoctor -match 'DestroyWindow\(SoundDoctor::resultsWindow\)')) 'Sound Doctor can retain stale recommendations across scene-collection changes.'
 Assert-True (($soundDoctor -match 'OutputsActive\(\)') -and ($soundDoctor -match 'showResults&&OutputsActive\(\)') -and ($soundDoctor -match 'WAITING_FOR_OUTPUTS') -and ($soundDoctor -match 'resultsDeferred') -and ($soundDoctor -match 'SD_STREAMING_STOPPED=3') -and ($soundDoctor -match 'SD_RECORDING_STOPPED=7')) 'Sound Doctor can display recommendations during streaming or recording.'
-Assert-True (($soundDoctor -match 'Sound Doctor is currently working\. Do you want to interrupt this process and discard the results\?') -and ($soundDoctor -match 'Don’t show this message again') -and ($soundDoctor -match 'SoundDoctorInterruptWarningSuppressed') -and ($soundDoctor -match 'yes->setDefault\(true\)') -and ($soundDoctor -match 'Stop\(false\)')) 'Sound Doctor cannot be safely interrupted with the agreed confirmation and persistent bypass.'
+Assert-True (($soundDoctor -match 'Sound Doctor is currently working\. Do you want to interrupt this process and discard the results\?') -and ($soundDoctor -match 'Don.t show this message again') -and ($soundDoctor -match 'SoundDoctorInterruptWarningSuppressed') -and ($soundDoctor -match 'yes->setDefault\(true\)') -and ($soundDoctor -match 'Stop\(false\)')) 'Sound Doctor cannot be safely interrupted with the agreed confirmation and persistent bypass.'
 Assert-True (($soundDoctor -match 'static void Tick\(\)\{if\(!running\.load\(\)\)return;Refresh\(\);if\(promptOpen\)return;') -and ($soundDoctor -match 'if\(running\.load\(\)\)\{PromptInterruption\(\);return;\}')) 'Sound Doctor can finish behind its interruption dialog or cannot route a repeated activation to interruption.'
 Assert-True (($soundDoctor -notmatch 'Q(File|SaveFile)|CreateFile|WriteFile') -and ($soundDoctor -notmatch 'source_(set_volume|update|set_enabled)')) 'Sound Doctor records session data or changes user-owned source/filter settings.'
 Assert-True (($qtInterface -match 'audio->addAction') -and ($qtInterface -match 'video->addAction') -and ($qtInterface -match 'AdvancedSoundSettings') -and ($qtInterface -match 'ManageOpenAiApiKeys') -and ($qtInterface -match 'OpenUserManual') -and ($qtInterface -match 'QDesktopServices::openUrl')) 'The discoverable Tools menu or localized user-manual command is incomplete.'
@@ -98,7 +98,7 @@ Assert-True (($canvas -match 'copy_latest') -and ($canvas -match 'CopyLatestResu
 Assert-True ($compatibility -match 'QStringLiteral\("reasoning"\).*QStringLiteral\("effort"\).*QStringLiteral\("low"\)') 'Compatibility analysis does not use low reasoning for its required web research.'
 Assert-True ($plugin -match 'CancelNetworkRequests\(\)') 'Network requests are not cancelled during shutdown.'
 Assert-True ($installer -match 'HasValidMicrosoftSignature') 'Downloaded prerequisites are not signature checked.'
-Assert-True (($installer -match '#define AppVersion "1\.1\.3"') -and ($installer -match 'OutputBaseFilename=AccessibleStudio-1\.1\.3-Setup') -and ($installer -notmatch '1\.1\.3-test')) 'The installer is not clearly identified as the final 1.1.3 build.'
+Assert-True (($installer -match '#define AppVersion "1\.1\.4 Volume Speech Test 2"') -and ($installer -match 'OutputBaseFilename=AccessibleStudio-1\.1\.4-Volume-Speech-Test-2-Setup') -and ($installer -notmatch '1\.1\.3-test')) 'The installer is not clearly identified as the 1.1.4 volume speech test build.'
 Assert-True (($installer -match 'IndependentProjectNotice') -and ($installer -match 'BDA542EA-4E63-4F03-9F5B-B7A8CD8E470B') -and ($installer -match 'RemoveAccessibleObsStudioLegacy\.ps1') -and ($installer -match '6934DC32-5675-4735-B08A-0DED7B2CBD79')) 'The Accessible Studio transition notice, legacy cleanup, or new installer identity is incomplete.'
 
 Write-Host 'Hardening source invariants passed.'

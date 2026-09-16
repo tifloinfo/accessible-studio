@@ -29,7 +29,7 @@ Si está instalada la versión publicada Accessible OBS Studio 1.0, se desinstal
 
 Cuando NVDA es el único lector de pantalla detectado en ejecución, el complemento anuncia expresamente el nombre localizado de la región después de cambiar correctamente con F6, Mayús+F6 o Ctrl+0 a Ctrl+5. Este anuncio adicional se suprime con JAWS, Narrador, lectores desconocidos o varios lectores detectados a la vez.
 
-La orden **.Abrir el editor de métodos abreviados de teclado** abre directamente el mismo editor y no tiene una asignación predeterminada. Su identificador interno no cambia, por lo que se conserva cualquier asignación existente.
+La orden **.Abrir el menú de Accessible Studio** abre directamente el menú del complemento y no tiene una asignación predeterminada. Su identificador interno no cambia, por lo que se conserva cualquier asignación existente.
 
 De forma predeterminada, Accessible Studio obliga a que todos los métodos abreviados de teclado de OBS funcionen solo mientras OBS sea la aplicación activa. Mantiene **Configuración > Avanzado > Comportamiento del foco de los métodos abreviados** en **Deshabilitar métodos abreviados cuando la ventana principal no tenga el foco** y restaura el valor si cambia. Para devolver el control a OBS, marque y guarde **Permitir que OBS Studio gestione si los métodos abreviados de teclado funcionan fuera de OBS** en el editor. A partir de entonces, el complemento deja de intervenir.
 

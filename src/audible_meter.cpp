@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Tiflo.Info
 
 namespace {
+#include "meter_measurement_text.h"
 constexpr uint32_t AM_AUDIO_FLAG=1u<<1;
 constexpr int AM_MAX_CHANNELS=8,AM_FADER_LOG=2,AM_SAMPLE_PEAK=0,AM_TRUE_PEAK=1;
 constexpr int AM_DEFAULT_WARNING_MS=1500,AM_RECOVERY_MS=1000,AM_MIN_DB=-100,AM_MAX_DB=20,AM_BINS=121;
@@ -101,8 +102,8 @@ static bool RememberInputIgnored(const QString &name,const QString &type,const Q
     if(!InputIgnored(name,type,signal,fingerprint))ignoredInputSources.append(QJsonObject{{QStringLiteral("name"),name},{QStringLiteral("sourceType"),type},{QStringLiteral("signal"),signal},{QStringLiteral("identitySha256"),fingerprint}});
     return SaveInputDecisions();
 }
-static QString ZoneText(MeterZone z){switch(z){case MeterZone::Green:return QStringLiteral("green");case MeterZone::Yellow:return QStringLiteral("yellow");case MeterZone::Red:return QStringLiteral("red");default:return QStringLiteral("no signal");}}
-static QString MeterDbText(double db){return std::isfinite(db)?QStringLiteral("%1 dBFS").arg(db,0,'f',1):QStringLiteral("no signal");}
+static QString ZoneText(MeterZone z){switch(z){case MeterZone::Green:return MText(MeterSpeech::Green);case MeterZone::Yellow:return MText(MeterSpeech::Yellow);case MeterZone::Red:return MText(MeterSpeech::Red);default:return MText(MeterSpeech::NoSignal);}}
+static QString MeterDbText(double db){return std::isfinite(db)?QStringLiteral("%1 dBFS").arg(db,0,'f',1):MText(MeterSpeech::NoSignal);}
 static void BuildTone(QByteArray &sound,double frequency,int amplitude){
     if(!sound.isEmpty())return;constexpr int rate=22050,samples=rate/2,data=samples*2;sound.resize(44+data);auto *b=reinterpret_cast<unsigned char*>(sound.data());
     auto word=[b](int o,uint16_t v){b[o]=v&255;b[o+1]=(v>>8)&255;};auto dword=[b](int o,uint32_t v){for(int i=0;i<4;++i)b[o+i]=(v>>(i*8))&255;};
@@ -141,8 +142,8 @@ static void MeterCallback(void *p,const float *magnitude,const float *peak,const
 }
 static void Detach(MeterSource &s){if(s.meter){api.volmeter_remove_callback(s.meter,MeterCallback,&s);api.volmeter_detach(s.meter);api.volmeter_destroy(s.meter);s.meter=nullptr;}if(s.source){api.source_release(s.source);s.source=nullptr;}}
 static bool Attach(MeterSource &s,void *enumerated){
-    void *ref=api.source_get_ref(enumerated);if(!ref)return false;obs_volmeter *m=api.volmeter_create(AM_FADER_LOG);if(!m){api.source_release(ref);return false;}api.volmeter_set_peak_type(m,audiblePeakType.load());api.volmeter_add_callback(m,MeterCallback,&s);
-    if(!api.volmeter_attach(m,ref)){api.volmeter_remove_callback(m,MeterCallback,&s);api.volmeter_destroy(m);api.source_release(ref);return false;}s.source=ref;s.meter=m;SourceIdentity(ref,s.sourceType,s.signalReference,s.settingsFingerprint);s.checkPrefader=CheckPrefaderForSourceType(s.sourceType);s.inputIgnored=InputIgnored(s.name,s.sourceType,s.signalReference,s.settingsFingerprint);s.channels=std::clamp(api.volmeter_channels(m),1,AM_MAX_CHANNELS);return true;
+    void *ref=api.source_get_ref(enumerated);if(!ref)return false;obs_volmeter *m=api.volmeter_create(AM_FADER_LOG);if(!m){api.source_release(ref);return false;}api.volmeter_set_peak_type(m,audiblePeakType.load());
+    if(!api.volmeter_attach(m,ref)){api.volmeter_remove_callback(m,MeterCallback,&s);api.volmeter_destroy(m);api.source_release(ref);return false;}s.source=ref;s.meter=m;SourceIdentity(ref,s.sourceType,s.signalReference,s.settingsFingerprint);s.checkPrefader=CheckPrefaderForSourceType(s.sourceType);s.inputIgnored=InputIgnored(s.name,s.sourceType,s.signalReference,s.settingsFingerprint);s.channels=std::clamp(api.volmeter_channels(m),1,AM_MAX_CHANNELS);api.volmeter_add_callback(m,MeterCallback,&s);return true;
 }
 static void Merge(LevelAggregate &to,const LevelAggregate &from){to.totalBlocks+=from.totalBlocks;for(size_t i=0;i<to.bins.size();++i)to.bins[i]+=from.bins[i];}
 static void Archive(MeterSource &s){
@@ -226,17 +227,17 @@ static TypicalLevel Typical(const LevelAggregate &v){
     if(active<5||activeEnergy<=0)return {};return {true,10.0*std::log10(activeEnergy/active),v.totalBlocks?100.0*active/v.totalBlocks:0};
 }
 static void SelectedInstant(){
-    if(selectedUuid.isEmpty()){AnnounceAccessibility(QStringLiteral("No Source Selected"));return;}auto *s=ActiveSource(selectedUuid);if(!s){AnnounceAccessibility(QStringLiteral("The selected source has no current signal."));return;}auto now=std::chrono::steady_clock::now();QString name;double db;MeterZone zone;
-    {std::lock_guard<std::mutex> lock(s->mutex);name=s->name;db=s->outputDb;zone=s->updated.time_since_epoch().count()&&std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()<=500?s->outputZone:MeterZone::NoSignal;}AnnounceAccessibility(zone==MeterZone::NoSignal?QStringLiteral("%1, no current signal.").arg(name):QStringLiteral("%1, %2, %3.").arg(name,MeterDbText(db),ZoneText(zone)));
+    if(selectedUuid.isEmpty()){AnnounceAccessibility(MText(MeterSpeech::NoSelection));return;}auto *s=ActiveSource(selectedUuid);if(!s){AnnounceAccessibility(MText(MeterSpeech::SelectedSilent));return;}auto now=std::chrono::steady_clock::now();QString name;double db;MeterZone zone;
+    {std::lock_guard<std::mutex> lock(s->mutex);name=s->name;db=s->outputDb;zone=s->updated.time_since_epoch().count()&&std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()<=500?s->outputZone:MeterZone::NoSignal;}AnnounceAccessibility(zone==MeterZone::NoSignal?MText(MeterSpeech::SourceSilent).arg(name):QStringLiteral("%1, %2, %3.").arg(name,MeterDbText(db),ZoneText(zone)));
 }
 static void LoudestInstant(){
-    auto now=std::chrono::steady_clock::now();QString name;double db=-INFINITY;MeterZone zone=MeterZone::NoSignal;for(const auto &s:meterSources){std::lock_guard<std::mutex> lock(s->mutex);if(!s->updated.time_since_epoch().count()||std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()>500||!std::isfinite(s->outputDb))continue;if(!std::isfinite(db)||s->outputDb>db){name=s->name;db=s->outputDb;zone=s->outputZone;}}AnnounceAccessibility(name.isEmpty()?QStringLiteral("No active audio signal."):QStringLiteral("%1, %2, %3.").arg(name,MeterDbText(db),ZoneText(zone)));
+    auto now=std::chrono::steady_clock::now();QString name;double db=-INFINITY;MeterZone zone=MeterZone::NoSignal;for(const auto &s:meterSources){std::lock_guard<std::mutex> lock(s->mutex);if(!s->updated.time_since_epoch().count()||std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()>500||!std::isfinite(s->outputDb))continue;if(!std::isfinite(db)||s->outputDb>db){name=s->name;db=s->outputDb;zone=s->outputZone;}}AnnounceAccessibility(name.isEmpty()?MText(MeterSpeech::NoActive):QStringLiteral("%1, %2, %3.").arg(name,MeterDbText(db),ZoneText(zone)));
 }
 static void SelectedOverall(){
-    if(selectedUuid.isEmpty()){AnnounceAccessibility(QStringLiteral("No Source Selected"));return;}auto all=Aggregates();auto it=std::find_if(all.begin(),all.end(),[](const auto &v){return v.uuid==selectedUuid;});if(it==all.end()){AnnounceAccessibility(QStringLiteral("Not enough active signal for the selected source."));return;}TypicalLevel t=Typical(it->level);AnnounceAccessibility(t.available?QStringLiteral("%1, %2, %3.").arg(it->name,MeterDbText(t.db),ZoneText(ZoneForDb(t.db))):QStringLiteral("Not enough active signal for %1.").arg(it->name));
+    if(selectedUuid.isEmpty()){AnnounceAccessibility(MText(MeterSpeech::NoSelection));return;}auto all=Aggregates();auto it=std::find_if(all.begin(),all.end(),[](const auto &v){return v.uuid==selectedUuid;});if(it==all.end()){AnnounceAccessibility(MText(MeterSpeech::SelectedInsufficient));return;}TypicalLevel t=Typical(it->level);AnnounceAccessibility(t.available?QStringLiteral("%1, %2, %3.").arg(it->name,MeterDbText(t.db),ZoneText(ZoneForDb(t.db))):MText(MeterSpeech::SourceInsufficient).arg(it->name));
 }
 static void LoudestOverall(){
-    auto all=Aggregates();const SessionSource *best=nullptr;TypicalLevel bestLevel;for(const auto &v:all){TypicalLevel t=Typical(v.level);if(t.available&&(!best||t.db>bestLevel.db)){best=&v;bestLevel=t;}}AnnounceAccessibility(best?QStringLiteral("%1, %2, %3.").arg(best->name,MeterDbText(bestLevel.db),ZoneText(ZoneForDb(bestLevel.db))):QStringLiteral("Not enough active signal to determine the overall loudest source."));
+    auto all=Aggregates();const SessionSource *best=nullptr;TypicalLevel bestLevel;for(const auto &v:all){TypicalLevel t=Typical(v.level);if(t.available&&(!best||t.db>bestLevel.db)){best=&v;bestLevel=t;}}AnnounceAccessibility(best?QStringLiteral("%1, %2, %3.").arg(best->name,MeterDbText(bestLevel.db),ZoneText(ZoneForDb(bestLevel.db))):MText(MeterSpeech::OverallInsufficient));
 }
 static MeterZone FocusedZone(){auto *s=ActiveSource(consoleFocusedUuid);if(!s)return MeterZone::NoSignal;auto now=std::chrono::steady_clock::now();std::lock_guard<std::mutex> lock(s->mutex);return s->updated.time_since_epoch().count()&&std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()<=500?s->outputZone:MeterZone::NoSignal;}
 static QString LoudestUuid(){auto now=std::chrono::steady_clock::now();QString id;double db=-INFINITY;for(const auto &s:meterSources){std::lock_guard<std::mutex> lock(s->mutex);if(s->updated.time_since_epoch().count()&&std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()<=500&&(id.isEmpty()||s->outputDb>db)){id=s->uuid;db=s->outputDb;}}return id;}
@@ -254,24 +255,24 @@ static bool FindSourceReference(void *parameter,void *enumerated){
     auto *lookup=static_cast<SourceLookup*>(parameter);QString uuid=QString::fromUtf8(api.source_uuid(enumerated)?api.source_uuid(enumerated):"");if(uuid!=lookup->uuid)return true;lookup->source=api.source_get_ref(enumerated);return false;
 }
 static void ReduceWarningSources(){
-    if(prefaderPriorityActive.load()||playingTone==AudibleTone::InputWarning){AnnounceAccessibility(QStringLiteral("Prefader warning requires manual adjustment."));return;}if(playingTone!=AudibleTone::OutputWarning){AnnounceAccessibility(QStringLiteral("No output warning sources."));return;}
+    if(prefaderPriorityActive.load()||playingTone==AudibleTone::InputWarning){AnnounceAccessibility(MText(MeterSpeech::InputManual));return;}if(playingTone!=AudibleTone::OutputWarning){AnnounceAccessibility(MText(MeterSpeech::NoOutputWarning));return;}
     struct Candidate{MeterSource *meterSource{};void *source{};QString uuid,name;double peakDb{-INFINITY};};
     auto now=std::chrono::steady_clock::now();std::vector<Candidate> candidates;
     for(const auto &s:meterSources){std::lock_guard<std::mutex> lock(s->mutex);bool fresh=s->updated.time_since_epoch().count()&&std::chrono::duration_cast<std::chrono::milliseconds>(now-s->updated).count()<=500;if(fresh&&!s->outputAlert.armed&&!s->outputAlert.automaticallyCorrected&&s->outputDb>=outputWarningDb.load())candidates.push_back({s.get(),s->source,s->uuid,s->name,std::isfinite(s->outputAlert.peakDb)?s->outputAlert.peakDb:s->outputDb});}
-    if(candidates.empty()){AnnounceAccessibility(QStringLiteral("No output warning sources."));return;}
+    if(candidates.empty()){AnnounceAccessibility(MText(MeterSpeech::NoOutputWarning));return;}
     std::stable_sort(candidates.begin(),candidates.end(),[](const Candidate &a,const Candidate &b){return a.peakDb>b.peakDb;});
     const double peakTarget=outputWarningDb.load()-peakSafetyMarginDb.load(),maximumReduction=maximumReductionDb.load();std::vector<AutomaticLevelChange> changes;QStringList announcements;bool limited=false;
     for(const Candidate &candidate:candidates){
         if(!candidate.source)continue;float before=api.source_get_volume(candidate.source);double beforeDb=GainDb(before);
         double required=std::max(0.0,candidate.peakDb-peakTarget);if(required<=0.0)continue;
-        if(required>maximumReduction)limited=true;double requested=std::min(required,maximumReduction);double reduction=std::ceil(requested*2.0)/2.0;double afterDb=std::max(-100.0,beforeDb-reduction);float after=DbGain(afterDb);api.source_set_volume(candidate.source,after);{std::lock_guard<std::mutex> lock(candidate.meterSource->mutex);candidate.meterSource->outputAlert.automaticallyCorrected=true;}changes.push_back({candidate.uuid,candidate.name,before,after});announcements.push_back(QStringLiteral("%1, reduced %2 dB, fader %3 dB.").arg(candidate.name).arg(beforeDb-afterDb,0,'f',1).arg(afterDb,0,'f',1));
+        if(required>maximumReduction)limited=true;double requested=std::min(required,maximumReduction);double reduction=std::ceil(requested*2.0)/2.0;double afterDb=std::max(-100.0,beforeDb-reduction);float after=DbGain(afterDb);api.source_set_volume(candidate.source,after);{std::lock_guard<std::mutex> lock(candidate.meterSource->mutex);candidate.meterSource->outputAlert.automaticallyCorrected=true;}changes.push_back({candidate.uuid,candidate.name,before,after});announcements.push_back(MText(MeterSpeech::Reduced).arg(candidate.name).arg(beforeDb-afterDb,0,'f',1).arg(afterDb,0,'f',1));
     }
-    if(changes.empty()){AnnounceAccessibility(QStringLiteral("No output warning sources required adjustment."));return;}automaticLevelUndo=std::move(changes);if(limited)announcements.push_back(QStringLiteral("Manual adjustment may still be needed."));UpdateAudibleOutput();AnnounceAccessibility(announcements.join(QLatin1Char(' ')));
+    if(changes.empty()){AnnounceAccessibility(MText(MeterSpeech::NoReduction));return;}automaticLevelUndo=std::move(changes);if(limited)announcements.push_back(MText(MeterSpeech::ManualStillNeeded));UpdateAudibleOutput();AnnounceAccessibility(announcements.join(QLatin1Char(' ')));
 }
 static void RestoreAutomaticLevelCorrection(){
-    if(automaticLevelUndo.empty()){AnnounceAccessibility(QStringLiteral("No automatic level correction to restore."));return;}QStringList restored;int skipped=0;
+    if(automaticLevelUndo.empty()){AnnounceAccessibility(MText(MeterSpeech::NothingToRestore));return;}QStringList restored;int skipped=0;
     for(const AutomaticLevelChange &change:automaticLevelUndo){SourceLookup lookup{change.uuid};api.enum_sources(FindSourceReference,&lookup);if(!lookup.source){++skipped;continue;}float current=api.source_get_volume(lookup.source);float tolerance=std::max(0.000001f,std::abs(change.after)*0.01f);if(std::abs(current-change.after)<=tolerance){api.source_set_volume(lookup.source,change.before);restored.push_back(change.name);}else ++skipped;api.source_release(lookup.source);}
-    automaticLevelUndo.clear();UpdateAudibleOutput();if(restored.isEmpty()){AnnounceAccessibility(QStringLiteral("Automatic level correction was not restored because the source levels changed."));return;}QString message=QStringLiteral("Restored %1.").arg(restored.join(QStringLiteral(", ")));if(skipped)message+=QStringLiteral(" Some source levels had changed.");AnnounceAccessibility(message);
+    automaticLevelUndo.clear();UpdateAudibleOutput();if(restored.isEmpty()){AnnounceAccessibility(MText(MeterSpeech::RestoreSkipped));return;}QString message=MText(MeterSpeech::Restored).arg(restored.join(QStringLiteral(", ")));if(skipped)message+=MText(MeterSpeech::SomeChanged);AnnounceAccessibility(message);
 }
 struct PendingAlert{QString uuid,name;double db{-INFINITY};};
 static void UpdateAudibleOutput(){
@@ -282,7 +283,19 @@ static void UpdateAudibleOutput(){
 }
 static void ResetAllAlerts(){for(auto &s:meterSources){std::lock_guard<std::mutex> lock(s->mutex);ResetAlert(s->inputAlert);ResetAlert(s->outputAlert);}}
 static void ToggleWarnings(){bool enabled=!audibleWarningsEnabled.load();audibleWarningsEnabled=enabled;if(!enabled){CloseInputWarningDialog();ClearInputPriority();}ResetAllAlerts();UpdateAudibleOutput();AnnounceAccessibility(AMText(enabled?AM_WARNINGS_ON:AM_WARNINGS_OFF));}
-static bool EditableFocus(QWidget *w){for(QWidget *p=w;p;p=p->parentWidget())if(p->inherits("QLineEdit")||p->inherits("QTextEdit")||p->inherits("QPlainTextEdit")||p->inherits("QAbstractSpinBox")||p->inherits("QComboBox"))return true;return false;}
+static bool EditableFocus(QWidget *w){
+    if(!w)return true;
+    for(QWidget *p=w;p;p=p->parentWidget()){
+        if(p->inherits("QLineEdit")||p->inherits("QTextEdit")||p->inherits("QPlainTextEdit")||p->inherits("QAbstractSpinBox")||p->inherits("QComboBox")||p->testAttribute(Qt::WA_InputMethodEnabled))return true;
+        for(const QMetaObject *meta=p->metaObject();meta;meta=meta->superClass()){
+            const QString name=QString::fromLatin1(meta->className());
+            if(name.contains(QStringLiteral("Cef"),Qt::CaseInsensitive)||name.contains(QStringLiteral("WebEngine"),Qt::CaseInsensitive)||name.contains(QStringLiteral("WebView"),Qt::CaseInsensitive))return true;
+        }
+        if(p==obsMainWindow)break;
+    }
+    // Native child windows may contain editable controls not represented by Qt.
+    return QWidget::find(reinterpret_cast<WId>(GetFocus()))==nullptr;
+}
 class AudibleMeterKeyFilter final:public QObject{public:using QObject::QObject;protected:bool eventFilter(QObject *o,QEvent *e)override{
     if(e->type()!=QEvent::KeyPress||!audibleMeterActive.load()||QApplication::applicationState()!=Qt::ApplicationActive)return QObject::eventFilter(o,e);auto *k=static_cast<QKeyEvent*>(e);if(k->isAutoRepeat()||EditableFocus(QApplication::focusWidget()))return QObject::eventFilter(o,e);Qt::KeyboardModifiers modifiers=k->modifiers()&~Qt::KeypadModifier;
     if(k->key()==Qt::Key_I&&modifiers==Qt::ShiftModifier){ReduceWarningSources();return true;}if(k->key()==Qt::Key_I&&modifiers==(Qt::ControlModifier|Qt::ShiftModifier)){RestoreAutomaticLevelCorrection();return true;}if(modifiers!=Qt::NoModifier)return QObject::eventFilter(o,e);
@@ -292,7 +305,7 @@ static void ServiceTick(){if(!audibleMeterActive.load())return;if(++refreshTicks
 static void StartTimer(){if(meterTimer)return;meterTimer=new QTimer(PluginEventTarget());meterTimer->setInterval(100);QObject::connect(meterTimer,&QTimer::timeout,PluginEventTarget(),ServiceTick);meterTimer->start();}
 static void StopTimer(){if(meterTimer){meterTimer->stop();delete meterTimer;meterTimer=nullptr;}refreshTicks=0;}
 static void StartAudibleMeter(){LoadInputDecisions();sessionSources.clear();automaticLevelUndo.clear();selectedUuid=consoleFocusedUuid;collectionSwitchInProgress=false;ClearInputPriority();audibleWarningsEnabled=true;audibleMeterActive=true;if(audibleMeterMenuAction)audibleMeterMenuAction->setChecked(true);StartMeters();StartTimer();AnnounceAccessibility(AMText(AM_STARTED));}
-static void StopAudibleMeter(bool announce){if(!audibleMeterActive.exchange(false))return;collectionSwitchInProgress=false;CloseInputWarningDialog();ClearInputPriority();SetTone(AudibleTone::None);StopTimer();StopMeters();sessionSources.clear();automaticLevelUndo.clear();selectedUuid.clear();consoleFocusedUuid.clear();consoleOpen=false;if(audibleMeterMenuAction)audibleMeterMenuAction->setChecked(false);if(announce)AnnounceAccessibility(AMText(AM_STOPPED));}
+static void StopAudibleMeter(bool announce){if(!audibleMeterActive.exchange(false))return;collectionSwitchInProgress=false;CloseInputWarningDialog();ClearInputPriority();SetTone(AudibleTone::None);StopTimer();StopMeters();sessionSources.clear();automaticLevelUndo.clear();selectedUuid.clear();if(audibleMeterMenuAction)audibleMeterMenuAction->setChecked(false);if(announce)AnnounceAccessibility(AMText(AM_STOPPED));}
 }
 static double AudibleMeterDefaultOutputWarningDb(){return CurrentPeakType()==AM_TRUE_PEAK?-2.0:-9.0;}
 static double AudibleMeterOutputWarningDb(){return outputWarningDb.load();}
@@ -323,7 +336,7 @@ static bool AudibleMeterRequestConsoleOpen(){
 }
 static void AudibleMeterConsoleOpened(){consoleOpen=true;ResetOutputAlerts();UpdateAudibleOutput();}
 static void AudibleMeterConsoleClosed(){consoleOpen=false;consoleFocusedUuid.clear();ResetOutputAlerts();SetTone(AudibleTone::None);QTimer::singleShot(0,PluginEventTarget(),[]{UpdateAudibleOutput();});}
-static void AudibleMeterConsoleFocusSource(const QString &uuid){consoleFocusedUuid=uuid;if(audibleMeterActive.load())selectedUuid=uuid;if(consoleOpen)UpdateAudibleOutput();}
+static void AudibleMeterConsoleFocusSource(const QString &uuid){consoleFocusedUuid=uuid;if(audibleMeterActive.load()&&!uuid.isEmpty())selectedUuid=uuid;if(consoleOpen)UpdateAudibleOutput();}
 static QString AudibleMeterPreferredConsoleSource(){if(!audibleMeterActive.load())return {};QString warningSource=MostProblematicUuid();if(!warningSource.isEmpty())return warningSource;if(!selectedUuid.isEmpty()&&ActiveSource(selectedUuid))return selectedUuid;return LoudestUuid();}
 static QString AudibleMeterStatusText(){return audibleMeterActive.load()?AMText(AM_STATUS_ON).arg(AMText(audibleWarningsEnabled.load()?AM_STATUS_WARNINGS_ON:AM_STATUS_WARNINGS_OFF)):AMText(AM_STATUS_OFF);}
 static void ShutdownAudibleMeter(){StopAudibleMeter(false);}

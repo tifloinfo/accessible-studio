@@ -29,10 +29,10 @@ It recommends a compressor when all of these are true:
 - the source supplied at least 45 seconds of active audio;
 - its fader or filter chain did not change during the test;
 - it is a likely live-input source;
-- no compressor, enabled or disabled, already exists; and
+- no compressor or limiter, enabled or disabled, already exists; and
 - the dynamic spread meets the configured minimum, 8 dB by default.
 
-The proposed threshold is the median plus 5 dB, rounded and limited to the range −24 through −10 dB. Attack is 6 ms, release is 100 ms, and output gain is 0 dB. The ratio adapts to the spread: 2:1 below 10 dB, 2.5:1 from 10 dB to below 14 dB, and the configured maximum at 14 dB or more. The default maximum is 3:1.
+The RMS measurement is corrected for the OBS fader gain. The compressor is inserted after existing filters, so its input matches the measured signal. When both new filters are selected, compression is inserted before the new limiter. The proposed threshold is the median plus 5 dB, rounded and limited to the range −24 through −10 dB. Attack is 6 ms, release is 100 ms, and output gain is 0 dB. The ratio adapts to the spread: 2:1 below 10 dB, 2.5:1 from 10 dB to below 14 dB, and the configured maximum at 14 dB or more. The default maximum is 3:1.
 
 ### Can Sound Doctor reliably tell speech from music?
 

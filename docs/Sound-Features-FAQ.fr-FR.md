@@ -24,7 +24,7 @@ Pour chaque source, Sound Doctor conserve des distributions de taille fixe du ni
 
 La compression n’est envisagée que pour les types probablement en direct, comme les microphones et entrées audio directes. Sound Doctor compare la médiane RMS active, passage typique, au 95e centile, passage fort. Leur différence est la variation dynamique.
 
-Il recommande un compresseur si la source fournit 45 secondes actives, si son curseur et ses filtres n’ont pas changé, si elle est probablement en direct, si aucun compresseur même désactivé n’existe et si la variation atteint le minimum configuré.
+Il recommande un compresseur si la source fournit 45 secondes de signal actif, si son volume et ses filtres n’ont pas changé, si elle est probablement une entrée en direct et si la variation atteint le minimum configuré. La présence d’un compresseur ou d’un limiteur, même désactivé, empêche cette recommandation. Le seuil utilise le niveau avant le réglage de volume. Le nouveau compresseur est ajouté après les filtres existants.
 
 Le seuil proposé vaut médiane plus 5 dB, arrondi et limité entre −24 et −10 dB. Attaque : 6 ms ; relâchement : 100 ms ; gain de sortie : 0 dB. Le rapport s’adapte : 2:1 sous 10 dB, 2,5:1 de 10 à moins de 14 dB, puis le maximum configuré à partir de 14 dB. Les valeurs par défaut sont 8 dB de variation minimale et 3:1 au maximum.
 
