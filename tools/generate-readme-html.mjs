@@ -29,8 +29,11 @@ const css = `
     background: Canvas;
     color: CanvasText;
   }
-  main { max-width: 72rem; margin: 0 auto; padding: 1.5rem; }
+  main { max-width: 76ch; margin: 0 auto; padding: 1.5rem; }
   h1, h2, h3 { line-height: 1.25; }
+  h2 { margin-top: 2rem; }
+  li + li { margin-top: .35rem; }
+  nav { border-block: 1px solid GrayText; padding-block: 1rem; }
   a { color: LinkText; text-decoration: underline; text-underline-offset: .15em; }
   a:focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
   .skip-link {
@@ -58,6 +61,8 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;");
 }
 
+const contentsLabels = { en: 'Contents', de: 'Inhalt', es: 'Contenido', fr: 'Sommaire', ru: 'Содержание', uk: 'Зміст' };
+
 for (const [sourcePath, destinationPath, language, skipText] of documents) {
   const source = fs.readFileSync(sourcePath, "utf8");
   let body = marked.parse(source, { gfm: true });
@@ -68,6 +73,15 @@ for (const [sourcePath, destinationPath, language, skipText] of documents) {
 
   body = body.replaceAll('href="../README.md"', 'href="README.en-US.html"');
   body = body.replace(/href="(README\.[a-z]{2}-[A-Z]{2})\.md"/g, 'href="$1.html"');
+  const sections = [];
+  body = body.replace(/<h2>(.*?)<\/h2>/g, (_, heading) => {
+    const id = `section-${sections.length + 1}`;
+    sections.push(`<li><a href="#${id}">${heading}</a></li>`);
+    return `<h2 id="${id}">${heading}</h2>`;
+  });
+  const contents = `<nav aria-label="${contentsLabels[language]}"><h2>${contentsLabels[language]}</h2><ul>${sections.join('\n')}</ul></nav>`;
+  // Keep the title and introduction before the navigation landmark.
+  body = body.replace(/<h2 id="section-1">/, `${contents}\n<h2 id="section-1">`);
   const titleMatch = source.match(/^#\s+(.+)$/m);
   const title = titleMatch?.[1] ?? "Accessible Studio";
   const html = `<!doctype html>

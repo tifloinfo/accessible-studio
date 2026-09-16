@@ -1,131 +1,92 @@
-# Sound Features FAQ
+# Sound features: questions and answers
 
-This document covers Sound Doctor, Audible Meter, and the Accessible Volume Console in Accessible Studio 1.1.3.
+Use this reference with the [user guide](README.en-US.html). The audio tools need no API key.
 
-## Overview
+## Which tool should I use?
 
-### What is the difference between these features?
+The **Accessible Volume Console** adjusts source volume, monitoring, and program output. **Audible Meter** gives warnings and spoken level measurements. **Sound Doctor** runs a separate measurement session and suggests optional filters. Audible Meter and Sound Doctor cannot run together.
 
-**Audible Meter** continuously watches active sources and communicates level problems through tones and screen-reader announcements. **Accessible Volume Console** is a keyboard-accessible way to inspect and change OBS source volume, output, and monitoring. **Sound Doctor** runs a separate diagnostic session, analyzes level statistics, and offers optional compressor and limiter filters. Audible Meter and Sound Doctor cannot run at the same time.
+All work locally with fixed-size statistics in memory. They do not record or transmit audio or save measurement histories and reports. Settings and pre-fader opt-outs are retained.
 
-### Do these features record, transmit, or retain my audio?
+## What do the numbers mean?
 
-No. They read numerical levels supplied by OBS; they do not capture an audio waveform, create an audio recording, send audio over the network, or write measurement history or reports to disk. Session statistics use fixed-size memory and are discarded when the feature stops. Only ordinary preferences are retained: Advanced Sound Settings and any source identities placed on the pre-fader stop list.
+The console's dB value is fader gain: 0 dB leaves the level unchanged; negative values reduce it. It is not measured loudness.
 
-## Sound Doctor
+Peak readings describe short signal peaks. RMS describes signal energy and is used for typical levels and dynamic variation. Meter readings use dBFS; values nearer 0 dBFS are higher. Pre-fader means before the OBS volume control; post-fader means after it. Lowering that control cannot repair distortion already present in the input.
 
-### What exactly does Sound Doctor do?
+## Why does JAWS read the previous volume?
 
-Start it with Ctrl+Shift+D or from **Tools > Accessible Studio > Audio Tools > Sound Doctor**. After confirmation it watches active audio sources for 120 seconds while you use them normally. A source must provide at least 45 seconds of active signal to qualify for a processing recommendation. If streaming or recording is still active after 120 seconds, measurement continues and the report waits until both have stopped.
+Its arrow-key handling can speak the old slider number before the plugin announces the correct result with “dB.” This can falsely suggest a reversed adjustment. Insert+3 followed by the arrow removed the stale announcement in the reported test. The JAWS issue is being referred to Vispero; explicit final-value speech remains supported for JAWS and NVDA.
 
-For each source, Sound Doctor keeps fixed-size distributions of RMS level, peak observations, active time, source identity, initial fader level, and a fingerprint of the filter chain. It also inspects existing compressor and limiter settings. It never listens for words, recognizes content, or sends measurements to an AI service.
+## How are tones triggered?
 
-### How does it decide that compression may help?
+Automatic output warnings use accumulated exposure above a boundary. Defaults are 1.5 seconds and OBS's red boundary: −9 dBFS with sample peak or −2 dBFS with true peak. Dips shorter than one second do not fully reset exposure; one second below the boundary rearms it.
 
-Compression is considered only for source types that are likely to be live inputs, such as microphone and direct audio-input captures. Sound Doctor compares the median active RMS level—the typical passage—with the 95th-percentile RMS level—the louder passage. Their difference is the measured dynamic spread.
+Console tones, available while Audible Meter is active, respond immediately to the focused source. Yellow produces a middle tone; red a high tone. Sample-peak yellow/red boundaries are −20/−9 dBFS; true-peak boundaries are −13/−2 dBFS. Green, no signal, unavailable sources, and focus outside source controls are silent.
 
-It recommends a compressor when all of these are true:
+A low tone guides adjustment of an eligible live input that remains red before the fader. It starts after you agree to adjust the input. Media Source and VLC Video Source do not produce pre-fader warnings.
 
-- the source supplied at least 45 seconds of active audio;
-- its fader or filter chain did not change during the test;
-- it is a likely live-input source;
-- no compressor or limiter, enabled or disabled, already exists; and
-- the dynamic spread meets the configured minimum, 8 dB by default.
+## Can I silence warnings but keep measurements?
 
-The RMS measurement is corrected for the OBS fader gain. The compressor is inserted after existing filters, so its input matches the measured signal. When both new filters are selected, compression is inserted before the new limiter. The proposed threshold is the median plus 5 dB, rounded and limited to the range −24 through −10 dB. Attack is 6 ms, release is 100 ms, and output gain is 0 dB. The ratio adapts to the spread: 2:1 below 10 dB, 2.5:1 from 10 dB to below 14 dB, and the configured maximum at 14 dB or more. The default maximum is 3:1.
+Yes. I toggles automatic input and output warnings while Audible Meter is active. Re-enabling starts fresh exposure timing. Console tones and H/J/K/L remain available. These letters are never intercepted in editable controls.
 
-### Can Sound Doctor reliably tell speech from music?
+H gives the selected source's current output level and zone; J identifies the loudest source now. K gives the selected source's typical active RMS level for the session; L identifies the source with the highest typical active level. Selection follows the source most recently focused in the console.
 
-No. The available level measurements describe loudness and dynamics, not semantic content. Source type is used only as a likely-live-input heuristic. A microphone can carry music and an application capture can carry speech. For that reason, the report explicitly advises leaving a compressor recommendation unselected when the source is primarily music.
+## How does requested correction work?
 
-### When does it recommend a limiter?
+Press Shift+I during an output warning. For each responsible source, the target is the warning level minus the safety margin. Reduction uses the incident's highest observed peak, rounds upward to 0.5 dB, and is capped at the configured maximum. It never raises gain or adjusts a source solely for a pre-fader warning.
 
-By default, it recommends a limiter for every likely live-input source that supplied at least 45 seconds of active audio, did not change during the test, and has no existing limiter. It does not require observed clipping or peaks near the ceiling: this is preventive brick-wall protection against an unexpected future peak. The proposed limiter is last in the filter chain, with a default ceiling of −3 dBFS and a 60 ms release. Audio below the ceiling is unaffected by the limiter.
+Defaults are a 3 dB margin and 12 dB maximum reduction. This protects peaks; it does not balance speech, music, and effects for you.
 
-The advanced scope setting can extend limiter recommendations to every sufficiently active audio source. This may be useful for aggressive safety policy, but it can be unnecessary for mastered music or media that already has controlled peaks.
+Ctrl+Shift+I restores the last correction only on faders still matching the corrected values. Starting or stopping the meter, changing scene collection, or saving meter settings clears this one-step restoration record.
 
-### Are compressor and limiter recommendations linked?
+## Why does input guidance pause other warnings?
 
-No. They are evaluated independently. A source may receive neither recommendation, one, or both. A compressor controls dynamic variation; a final limiter provides a hard peak ceiling.
+Potential distortion before the fader takes priority. The initial dialog is silent. Yes starts guidance; No or Escape saves an opt-out for that unchanged source. A sustained healthy active signal resolves the incident. Changed identity or settings cause a fresh evaluation.
 
-### What else appears in the report?
+Silence is not success. No-signal announcements occur after 2 and 12 seconds, followed by a question after 22 seconds. Continuing waits for signal without repeating that silence sequence. Acknowledge the safe-level message before other warnings resume.
 
-Sound Doctor reports existing compressor and limiter settings, warns when a limiter is not last, identifies repeated pre-fader peaks near clipping, and explains when evidence was insufficient or the source changed. A filter cannot repair audio that was clipped before reaching OBS, so pre-fader clipping calls for lower device or application input gain.
+While the console is open, output timing pauses and input problems queue. Healthy active audio clears a queued problem; silence keeps it queued. Closing the console presents any still-relevant input problem first.
 
-### Does Sound Doctor change anything automatically?
+## What can I configure for Audible Meter?
 
-Not merely by running. Every recommendation has an initially unchecked **Apply this change automatically** checkbox. **Finish** applies only checked items. Before applying, Sound Doctor rechecks the source, its volume, and its filter chain; stale recommendations are skipped. New filters have visible Sound Doctor names, are inserted in the intended order, and participate in OBS Undo and Redo. Escape closes the report without applying anything.
+Open **Audio Tools > Advanced Sound Settings > Audible Meter**:
 
-### Can I change its recommendation policy?
+- Output-warning level: −30 to 0 dBFS; default follows OBS peak mode.
+- Exposure time: 0.1–30 seconds; default 1.5 seconds.
+- Peak safety margin: 0–12 dB; default 3 dB.
+- Maximum reduction: 0.5–30 dB; default 12 dB.
+- Pre-fader stop list: remove opt-outs to check those inputs again.
 
-Yes. Open **Tools > Accessible Studio > Audio Tools > Advanced Sound Settings**, select the **Sound Doctor** page, and use:
+These settings do not change console zones, H/J/K/L readings, or the input red boundary. There is one windowless meter mode. Apply saves; OK saves and closes; Cancel discards edits since the last Apply.
 
-- **Minimum dynamic variation for compression:** 6–15 dB; default 8 dB. Lower values recommend compression more often.
-- **Maximum recommended compressor ratio:** 2.5:1, 3:1, or 3.5:1; default 3:1. The adaptive calculation can still select 2:1 or 2.5:1.
-- **Sources eligible for limiter recommendations:** likely live inputs only by default, or all active audio sources.
-- **Recommended limiter ceiling:** −12 through −1 dBFS; default −3 dBFS.
+## How long does Sound Doctor need?
 
-The 120-second session and 45-second minimum active-signal requirement are intentionally fixed. Apply saves without closing, OK saves and closes, and Cancel discards changes since the last Apply.
+At least 120 seconds, with at least 45 seconds of active audio per source for processing recommendations. Both durations are fixed. Measurement can continue during streaming or recording; results wait until both stop. Use representative speech and sound. The tool measures levels and cannot reliably distinguish speech from music.
 
-## Audible Meter and automatic level correction
+## When is compression recommended?
 
-### What does Audible Meter monitor?
+The source must be a likely live input, have enough active audio, remain unchanged, and have no existing compressor or limiter, including disabled ones. Dynamic spread must reach the configured minimum, 8 dB by default.
 
-Ctrl+I starts or stops one windowless Audible Meter mode. It follows all currently active audio sources. It uses post-fader peak for output warnings, pre-fader peak for eligible live captures, and RMS summaries for typical-level commands. It keeps operating whether or not OBS is streaming or recording.
+Spread is the difference between median active RMS and the 95th-percentile RMS. RMS is corrected for OBS fader gain. A new compressor follows existing processing and precedes a newly selected limiter.
 
-### What does the automatic warning beep mean?
+Threshold is median plus 5 dB, rounded and limited to −24 through −10 dB. Attack is 6 ms, release 100 ms, and output gain 0 dB. Ratio is 2:1 below 10 dB spread, 2.5:1 from 10 to below 14 dB, and the configured maximum from 14 dB. Leave music compression unselected unless you want the effect.
 
-The high automatic warning tone means at least one source has spent the configured amount of actual time at or above the output warning level. By default that time is 1.5 seconds. The default level follows OBS's meter mode: −9 dBFS with sample peak or −2 dBFS with true peak. Brief dips shorter than one second do not fully reset accumulated exposure; one second below the boundary rearms the warning. The tone is a warning, not a precise measurement, and the screen reader announces the most problematic source.
+## When is a limiter recommended?
 
-The lower warning tone has a different meaning: after you agreed to adjust an eligible input, its pre-fader signal is still in OBS's red zone. Lower the gain at the microphone, audio interface, Windows input, or source application. Moving the OBS fader cannot repair pre-fader distortion.
+By default, for sufficiently active likely live inputs that remain unchanged and have no limiter. Clipping need not have occurred: protection is preventive. A new limiter is last, with a default −3 dBFS ceiling and 60 ms release. It cannot repair earlier distortion or guarantee that the combined mix will not overload.
 
-### What do the two tones in Accessible Volume Console mean?
+Scope can include all active sources, though mastered media may not need another limiter. Compressor and limiter recommendations are independent. The report also explains existing processing, a limiter not placed last, repeated near-clipping input peaks, and insufficient or stale evidence.
 
-While Audible Meter is active and the Console is open, the focused source produces a middle tone in OBS's yellow output zone and a higher tone in the red output zone. Green, silence, an unavailable source, or focus outside a source control produces no tone. These are immediate measurement tones, not delayed warnings. They remain active even if automatic warnings are turned off with I.
+## Which Sound Doctor settings are available?
 
-Zone boundaries follow OBS's peak mode. With sample peak, yellow begins at −20 dBFS and red at −9 dBFS. With true peak, yellow begins at −13 dBFS and red at −2 dBFS.
+- Minimum dynamic spread: 6–15 dB; default 8 dB.
+- Maximum compressor ratio: 2.5:1, 3:1, or 3.5:1; default 3:1. Lower ratios may still be recommended.
+- Limiter scope: likely live inputs or all active sources.
+- Limiter ceiling: −12 to −1 dBFS; default −3 dBFS.
 
-### Will Audible Meter lower my sound on its own?
+## Can it change my setup without approval?
 
-No. An output warning only informs you. While its high warning tone is sounding, Shift+I explicitly requests a correction. Audible Meter then considers every currently responsible source. For each, it calculates a target equal to the warning level minus the safety margin, compares that target with the highest observed peak in the incident, rounds the required reduction upward to the next 0.5 dB, and lowers the OBS fader by no more than the configured maximum. It never raises a source and never changes a source merely for a pre-fader warning.
+No. All recommendation checkboxes start unchecked. Finish applies selected items only after rechecking sources, volume, and filters. Changed sources are skipped. Escape closes without applying. Added Sound Doctor filters support OBS Undo and Redo.
 
-Defaults are a 3 dB safety margin and a maximum 12 dB reduction per correction. Automatic correction is conservative peak protection; it does not balance speech, music, gameplay, and effects artistically.
-
-### Can I undo an automatic correction?
-
-Yes. Ctrl+Shift+I restores the most recent Shift+I correction. A source is restored only if its fader still matches the automatically set value; sources changed afterward are deliberately skipped. Starting or stopping Audible Meter, changing scene collection, or saving new meter settings clears this one-level restoration record. OBS's own controls remain available as well.
-
-### How can I change Audible Meter behavior?
-
-On the **Audible Meter** page of Advanced Sound Settings you can change:
-
-- **Output warning level:** −30 through 0 dBFS; default −9 dBFS for sample peak or −2 dBFS for true peak.
-- **Time above warning level:** 0.1–30 seconds; default 1.5 seconds.
-- **Peak safety margin:** 0–12 dB; default 3 dB.
-- **Maximum automatic reduction:** 0.5–30 dB; default 12 dB.
-- **Pre-fader stop list:** remove saved source opt-outs so those unchanged inputs are checked again.
-
-These settings do not alter the fixed OBS green/yellow/red boundaries, Console measurement tones, H/J/K/L readings, or the pre-fader red boundary.
-
-### Can I temporarily silence warnings?
-
-While Audible Meter is active, press I to toggle automatic input and output warnings. Re-enabling them starts fresh exposure timing. This does not turn off Console measurement tones. Letter commands are never intercepted while focus is in an editable control.
-
-### What are H, J, K, and L for?
-
-- H reports the current post-fader level and zone of the source most recently focused in the Console.
-- J reports the currently loudest active source.
-- K reports the selected source's typical active RMS level for this session.
-- L reports the source with the loudest typical active RMS level for this session.
-
-### Why does a pre-fader warning take over everything else?
-
-It identifies possible damage before the OBS fader, so it has priority over output warnings. The decision dialog is silent. Choosing Yes starts guided monitoring; the low tone continues while the input is red. A sustained healthy active level resolves it. Silence is not treated as success: announcements occur after 2 and 12 seconds, followed by a question after 22 seconds. Choosing No or Escape stores that unchanged source on the pre-fader stop list. Changing its identity or settings causes it to be evaluated afresh.
-
-### What can I do in Accessible Volume Console?
-
-Ctrl+Grave opens it. Left and Right select sources; Up and Down adjust the focused fader by 1 dB; Home sets 0 dB; 1–9 select the first nine sources and 0 the tenth. Space toggles monitoring and program output together, Ctrl+Space toggles monitoring only, and Shift+Space toggles output only. The console normally lists active program sources; **Show All Sources** includes inactive sources. Changes take effect immediately, and the Console never raises a normally configured source above 0 dB by itself.
-
-### What is the safest workflow?
-
-Run Sound Doctor during representative speech and sound, review rather than blindly accept its suggestions, and leave music compression unchecked unless you want that effect. Keep Audible Meter active during normal work, use the Console's tones for immediate inspection, respond to pre-fader warnings at the original device or application, and use Shift+I only when you want a conservative output-fader correction.
+Press Ctrl+Shift+D again to interrupt measurement and confirm discarding the session. No or Escape continues. The remember-choice option can disable that confirmation.

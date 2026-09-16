@@ -1,195 +1,215 @@
-# Accessible Studio 1.1.3
+# Accessible Studio user guide
 
-[![Tiflo.Info logo: blue waves above the words Tiflo.info and the Russian phrase “Close your eyes and see”](assets/tiflo-info-logo.jpg)](https://tiflo.info)
+Accessible Studio adds keyboard navigation, spoken feedback, audio tools, and optional visual analysis to OBS Studio on Windows. It is designed for blind users working with JAWS or NVDA.
 
-Accessible Studio is a Windows accessibility plugin for OBS Studio. It is designed for blind keyboard and screen-reader users and has been developed with both JAWS and NVDA in mind.
+For audio measurements, tones, and filter recommendations, see the [Sound Features FAQ](docs/Sound-Features-FAQ.en-US.html).
 
-Accessible Studio is an independent, third-party accessibility plugin for OBS Studio. It is not developed by, affiliated with, sponsored by, or endorsed by the OBS Project or its contributors. OBS and OBS Studio are registered trademarks of Wizards of OBS LLC.
+## Install, update, or remove
 
-## Requirements
+You need 64-bit Windows 10 or 11 and 64-bit OBS Studio 32.x. An OpenAI API key is needed only for canvas and compatibility analysis. Audio tools and keyboard features work without one.
 
-- 64-bit Windows 10 or Windows 11.
-- A supported 64-bit OBS Studio 32 release.
-- An OpenAI API key only for canvas analysis and compatibility analysis.
-- Internet access during installation only if WebView2 or the Visual C++
-  Runtime is missing, and later when an OpenAI feature is used.
+1. Install OBS from the [official download page](https://obsproject.com/download).
+2. Close OBS and run the installer supplied with your Accessible Studio release or test build.
+3. Follow the prompts. Setup downloads missing Microsoft WebView2 and Visual C++ components from Microsoft, so Internet access may be needed.
+4. Start OBS and open **Tools > Accessible Studio**.
 
-The installer checks for Microsoft WebView2 and the Visual C++ Runtime. It downloads and installs only missing components from Microsoft. OBS and Qt files are never replaced.
+Setup stops if OBS is missing, damaged, or older than 32.0. With OBS 33 or later, it warns about compatibility and offers the [latest plugin release](https://github.com/tifloinfo/accessible-studio/releases/latest). Installing despite the warning does not establish compatibility. Setup asks you to close OBS; it never terminates OBS automatically.
 
-## Installation
+Files go in `C:\ProgramData\obs-studio\plugins\accessible-studio`. OBS and Qt files are not replaced. No desktop shortcut is created. The final installer page can open the manual in the selected language.
 
-1. Install the 64-bit edition of OBS Studio 32.0 or later, then run
-   `AccessibleStudio-1.1.3-Setup.exe`.
-2. If OBS Studio is absent, damaged, or older than 32.0, Setup offers to open
-   the [official OBS Studio download page](https://obsproject.com/download) and
-   exits without installing files or prerequisites. You can also update an
-   older OBS release from Help > Check for Updates in OBS Studio.
-3. OBS Studio 32.x is supported. With OBS Studio 33 or later, Setup warns that
-   this plugin release may be incompatible and offers the
-   [latest-plugin page](https://github.com/tifloinfo/accessible-studio/releases/latest) before allowing an explicit
-   install-anyway choice.
-4. Close OBS Studio before continuing. If it is running, Setup asks you to
-   close it and choose Retry; it never terminates OBS automatically.
-5. If the published Accessible OBS Studio 1.0 release is installed, Setup
-   uninstalls it and removes only its plugin-specific settings, keyboard
-   shortcut assignments, cached data, and stored OpenAI API key. Other OBS
-   settings and content are preserved.
-6. Complete the installation and start OBS Studio.
-7. On the final page, the **Open the ReadMe in your web browser** checkbox opens
-   the HTML documentation matching the language selected for Setup.
+**Upgrading from Accessible OBS Studio 1.0:** Setup removes the old plugin, its plugin-specific settings, shortcuts, cache, and stored API key. Other OBS settings and content remain intact. Ordinary upgrades within Accessible Studio 1.1.x preserve settings and the key.
 
-The plugin is installed under `C:\ProgramData\obs-studio\plugins\accessible-studio`. No desktop or Start-menu shortcut is created.
+To uninstall, close OBS and remove Accessible Studio through Windows Installed Apps. Uninstalling preserves settings and the stored API key. To delete the key, use **Manage OpenAI API Keys** before uninstalling.
 
-To uninstall, open Windows Installed Apps and remove Accessible Studio. OBS must be closed. Uninstalling preserves your plugin settings and stored API key. To remove the key, use Manage OpenAI API Keys before uninstalling.
+## Find commands and help
 
-## Default keyboard shortcuts
+Open **Tools > Accessible Studio**. **Audio Tools** contains Accessible Volume Console, Audible Meter, Sound Doctor, and Advanced Sound Settings. **Video Tools** contains the canvas descriptions, Read Text, People and Backgrounds, Visual Checker, and Manage OpenAI API Keys.
 
-- F3: Basic Description of the current canvas, limited to 80 characters.
-- Shift+F3: Detailed Description of the current canvas.
-- Alt+F3: read visible canvas text without translation or commentary.
-- Ctrl+F3: describe visible people and their backgrounds.
-- F4: open Visual Checker to check the stream or recording for visual issues involving layout, camera, lighting, framing, focus, grain, appearance, clothing, background, and unwanted objects.
-- Ctrl+M: focus the visible native Media Controls.
+The main menu also has **Keyboard Shortcut Editor** and **Open User Manual**. The manual opens in your browser, in the OBS interface language when available and English otherwise.
+
+## Default shortcuts
+
+Existing conflicts or your own changes may leave a command with another shortcut or none.
+
+### Navigate OBS
+
+- F6 / Shift+F6: next / previous main area.
+- Ctrl+0: Video Preview.
+- Ctrl+1: Scenes.
+- Ctrl+2: Sources.
+- Ctrl+3: Audio Mixer.
+- Ctrl+4: Scene Transitions.
+- Ctrl+5: Controls.
+- Ctrl+M: visible Media Controls.
+- Alt+1 through Alt+9: scenes 1 through 9 in the displayed list; Alt+0: scene 10.
+
+NVDA receives an extra area-name announcement when it is the only detected screen reader. The native Audio Mixer keeps its OBS labels and keyboard behavior.
+
+### Control outputs and audio
+
 - F5: start or stop streaming.
-- Alt+F2: show Status Information for streaming, recording, the Virtual Camera, and Studio Mode.
-- F6: move to the next main OBS interface area.
-- Shift+F6: move to the previous interface area.
-- F7: start or stop recording.
-- Alt+F7: pause or resume recording.
+- F7: start or stop recording, including a paused recording.
+- Alt+F7: pause or resume recording, if supported by the OBS output configuration.
 - F8: start or stop the Virtual Camera.
-- Ctrl+0 through Ctrl+5: focus Video Preview, Scenes, Sources, Audio Mixer, Scene Transitions, or Controls.
-- Alt+1 through Alt+9: switch to scenes 1 through 9 in the displayed Scenes order. Alt+0 switches to scene 10. Scenes after the first ten have no numbered default shortcut.
-- Ctrl+Grave: open the Accessible Volume Console. Grave is the physical key immediately below Escape; its printed character depends on the keyboard layout.
+- Alt+F2: show output and Studio Mode status; Enter or Escape closes it.
+- Ctrl+Grave: Accessible Volume Console. Grave means the physical key immediately below Escape; its printed character varies by keyboard layout.
 - Ctrl+I: start or stop Audible Meter.
 - Ctrl+Shift+D: start or interrupt Sound Doctor.
 
-When NVDA is the only detected running screen reader, a successful region change with F6, Shift+F6, or Ctrl+0 through Ctrl+5 explicitly announces the region’s localized name. The extra announcement is suppressed for JAWS, Narrator, unknown readers, and ambiguous multiple-reader sessions.
+Completed output changes are announced, as are stream disconnection and recovery.
 
-The command **.Open Accessible Studio menu** opens the plugin menu directly. It is available for assignment but has no default keyboard shortcut. Its internal identifier is unchanged, so an existing assignment is preserved.
+### Inspect the picture
 
-By default, Accessible Studio forces all OBS keyboard shortcuts to work only while OBS is the active application. It keeps **Settings > Advanced > Hotkey Focus Behavior** set to **Disable hotkeys when main window is not in focus** and restores that value if it changes. To return control to OBS, select **Allow OBS Studio to manage whether keyboard shortcuts work outside OBS** in the Keyboard Shortcut Editor and save. When selected, the plugin stops changing the setting and stops overriding OBS hotkey state.
+These commands need an API key and Internet access. Preview does not need focus.
 
-On first run and after a profile change, the plugin checks planned defaults against existing assignments. A one-time shortcut-schema migration repairs missing or accidentally empty defaults in each profile without replacing nonempty custom assignments; later deliberate removals remain removed. A modal, screen-reader-accessible dialog appears only when real conflicts exist. You can remove only the conflicting combinations and use the Accessibility defaults, or keep the existing assignments and leave the conflicting Accessibility defaults unassigned. “Do not ask again” remembers the chosen policy for this plugin build across profiles; a later build asks again when conflicts exist.
+- F3: short description, up to 80 characters.
+- Shift+F3: detailed description.
+- Alt+F3: visible text, without translation or commentary.
+- Ctrl+F3: visible people and their immediate backgrounds.
+- F4: Visual Checker, for layout and image-quality problems.
 
-## Accessible Studio menu
+## Change shortcuts
 
-Choose **Tools > Accessible Studio** to open the plugin menu. **Audio Tools** contains **Accessible Volume Console**, the checkable **Audible Meter** command, **Sound Doctor**, and **Advanced Sound Settings**. **Video Tools** contains **Short Canvas Description**, **Detailed Canvas Description**, **Read Text**, **People and Backgrounds**, **Visual Checker**, and **Manage OpenAI API Keys**. The main plugin menu also contains **Keyboard Shortcut Editor** and **Open User Manual**.
+1. Open **Keyboard Shortcut Editor** from the plugin menu.
+2. Search for a command and select it with the arrow keys.
+3. Press Enter or choose **Add or Edit**, then press the combination in the shortcut field.
+4. Use **Add Another Keyboard Shortcut** for more assignments. Confirm, then choose **OK** in the main editor to save.
 
-**Open User Manual** opens the installed HTML manual in the default browser. Accessible Studio uses the current OBS interface language when that manual is installed and otherwise opens the English manual.
+If another command uses the combination, the editor identifies it and asks whether to reassign it. Delete or Remove in the main editor clears all assignments for the selected command. Closing with unsaved edits offers Save, Discard, or Cancel. Navigation keys and reserved system combinations are not captured.
 
-## Keyboard Shortcut Editor
+Saving may be refused if the profile, scene collection, or relevant assignments changed during editing. Reopen the editor to work with the current state.
 
-Choose **Tools > Accessible Studio > Keyboard Shortcut Editor**. Search the Commands list and select a command. Press Enter or activate **Add or Edit** to open the Keyboard Shortcut dialog; press Delete to remove the selected command's assignments. The list uses arrow-key navigation, while Tab moves among the search field, the selected command, the OBS hotkey-control checkbox, and the editor buttons. The OBS hotkey-control checkbox is cleared by default.
+By default, the plugin keeps OBS shortcuts active only while OBS is the active application. Select **Allow OBS Studio to manage whether keyboard shortcuts work outside OBS** and save to return control to OBS's Hotkey Focus Behavior setting.
 
-The Keyboard Shortcut dialog supports every keyboard shortcut assigned to the command. Type one combination into the Keyboard Shortcut field, use **Add Another Keyboard Shortcut** for an additional assignment, or remove a selected assignment. Enter or OK checks immediately for duplicates. If another command uses the combination, the dialog identifies it and asks whether to reassign it. No returns to the assignment dialog; Yes removes that conflicting assignment. Escape cancels the dialog. Tab, Shift+Tab, Enter, Escape, Alt+F4, Windows-key combinations, and other reserved system commands are not captured.
+At startup or after profile changes, a conflict dialog may offer to keep existing assignments or replace only conflicting combinations with plugin defaults. Keeping them leaves conflicting defaults unassigned. Remembering a choice applies across profiles for that build. Nonempty custom assignments are preserved during default-shortcut migration.
 
-Changes are staged until you activate OK in the main editor. Delete or Remove clears every assignment for the selected command. Closing with unsaved changes offers Save, Discard, and Cancel.
+The assignable command **.Open Accessible Studio menu** has no default shortcut.
 
-## Audio Mixer and Media Controls
+## Adjust source volume
 
-Ctrl+3 focuses the native Audio Mixer. The plugin no longer renames, numbers, or monitors its controls; use Tab and Shift+Tab with native OBS keyboard behavior. Number-based source selection remains available in the Accessible Volume Console.
+Press Ctrl+Grave to open **Accessible Volume Console**. Changes take effect immediately.
 
-Ctrl+Grave opens the modal **Accessible Volume Console** without changing the control remembered in the main OBS window. The console initially shows only audio sources active in the current program output; Preview-only sources in Studio Mode are excluded. Activate **Show All Sources** with Enter to include every audio source known to OBS, including currently inactive sources; the same non-default button then becomes **Show Active Sources Only**. Space does not activate this view button. Active sources remain first in the all-sources view. The console refreshes source membership, volume, output, and monitoring state from OBS while it remains open. Left and Right move between sources; Up and Down change the selected source by 1 dB; Home restores 0 dB; Space safely toggles monitoring and program output together; Ctrl+Space toggles monitoring only; and Shift+Space toggles program output only. Each source also has separate output and monitoring buttons. Number keys 1 through 9 select the first nine sources and 0 selects the tenth. A source whose gain was set above 0 dB elsewhere in OBS keeps that positive range available for adjustment; the console never raises a normal source above 0 dB on its own. Changes take effect immediately. Escape closes the console and restores the previous OBS control. JAWS and NVDA receive the source name, volume in dB, output state, and monitoring state as values change. After Up or Down, the console explicitly announces the resulting volume in dB, including at the volume limits. Pending announcements are combined so rapid key presses report the latest value; moving focus away cancels pending volume speech.
+- Left / Right: previous / next source.
+- Up / Down: raise / lower the focused fader by 1 dB.
+- Home: set the focused fader to 0 dB.
+- 1 through 9: first nine sources; 0: tenth source.
+- Space: toggle monitoring and program output together.
+- Ctrl+Space: toggle monitoring only.
+- Shift+Space: toggle program output only.
+- Escape: close and return to the previous OBS control.
 
-Known limitation: rapidly reversing between Up and Down can produce delayed or unreliable fader changes under some keyboard-repeat and screen-reader conditions. Discrete key presses are more reliable. During an Audible Meter output warning, Shift+I provides the conservative automatic-reduction alternative described below.
+Monitoring is sound you hear locally. Program output goes to the stream or recording. Each source also has separate buttons for these controls.
 
-The console refreshes its source list and displayed state from OBS twice per second, so scene changes and adjustments made through the native mixer or an external controller appear while it remains open. All listed sources remain reachable with Left and Right even when there are more than ten; only direct number-key selection is limited to ten. The console command and its default keyboard shortcut can be changed in the Keyboard Shortcut Editor. On OBS 32.2 and newer, mute and monitoring are independent. On OBS 32.0 and 32.1, the console translates the same controls to the older Monitor Only, Monitor and Output, and muted states.
+Initially, the console lists active program sources, excluding Preview-only sources in Studio Mode. Activate **Show All Sources** with Enter to include inactive sources; Space does not activate this button. Left and Right reach every source, including those beyond the ten numbered shortcuts. The list and values refresh twice per second.
 
-Ctrl+M focuses the Media Controls only when they are visible. While focus is within those controls, Left and Right move backward or forward by 5 seconds, Shift+Left and Shift+Right move backward or forward by 1 minute, Page Up moves backward by 5 minutes, and Page Down moves forward by 5 minutes. These overrides are confined to the Media Controls; the keys retain their normal behavior everywhere else.
+A normal source cannot be raised above 0 dB here. If its gain was already positive elsewhere in OBS, that range remains available. OBS 32.2 and later support independent mute and monitoring; older supported versions use the previous monitoring states.
 
-## Audible Meter
+After Up or Down, the plugin announces the resulting dB value, including at the limits. Rapid presses combine pending announcements; moving focus away cancels pending volume speech.
 
-For detailed technical answers about Audible Meter, automatic correction, Accessible Volume Console tones, and Sound Doctor, open the [Sound Features FAQ](docs/Sound-Features-FAQ.en-US.html).
+**JAWS speech issue:** JAWS may first say the previous number, followed by the plugin's correct value with “dB.” This can sound like a reversed adjustment, although volume changes correctly. In the reported test, Insert+3 followed by the arrow removed the stale announcement. The issue is being referred to Vispero. Explicit dB feedback remains supported for JAWS and NVDA.
 
-Press Ctrl+I to start or stop **Audible Meter**. It monitors every active audio source and starts with automatic warnings on. While Audible Meter is active, press I to turn both automatic input and output warnings off or on. Turning warnings back on resets the exposure counters, so no warning can sound until a fresh configured period of warning-level exposure has accumulated. The Console never opens automatically.
+## Monitor levels with Audible Meter
 
-Activate **Tools > Accessible Studio > Audio Tools > Advanced Sound Settings** to open an OBS-style settings dialog. Use the left-hand category list to switch between **Audible Meter** and **Sound Doctor** pages. The Audible Meter page configures **Output warning level**, **Time before warning**, **Peak safety margin**, **Maximum automatic reduction**, and the **Pre-fader stop list**. The Sound Doctor page configures minimum dynamic variation for compression, maximum compressor ratio, limiter recommendation scope, and recommended limiter ceiling. Apply saves without closing; OK saves and closes; Cancel discards changes made since the most recent Apply.
+Ctrl+I toggles one windowless mode. It watches active sources whether or not OBS is streaming or recording, starts with automatic warnings enabled, and never opens the console automatically or changes filters.
 
-While an output warning is sounding, press Shift+I to reduce every source responsible for that warning. Audible Meter places the observed output peak by the configured safety margin below the configured warning level, never raises volume, and limits one correction to the configured maximum. It does not alter sources with only a prefader warning because a fader cannot repair distortion that already exists before the fader. Press Ctrl+Shift+I to restore the most recent automatic correction; a source that was subsequently adjusted by another method is left unchanged. Automatic correction is a conservative safety adjustment, not a replacement for balancing speech, gameplay, music, and effects by ear.
+While it is active:
 
-The automatic warning tones are warnings, not measurements. A warning means that a source has spent enough actual time in OBS's red zone to deserve attention; it does not state a precise level. Output warnings use OBS's post-fader peak, so lowering a source's OBS volume also lowers the output value being judged. Pre-fader warnings detect signal-quality problems already present before that control for live captures such as microphones, sound cards, and application audio. Audio and video files played directly by OBS, including Media Source and VLC Video Source, do not produce pre-fader warnings.
+- I: toggle automatic input and output warnings.
+- H: current level and zone of the source last selected in the console.
+- J: name and current level of the loudest source.
+- K: selected source's typical active level during this session.
+- L: source with the highest typical active level during this session.
+- Shift+I: during an output warning, request a conservative reduction for responsible sources.
+- Ctrl+Shift+I: restore the last reduction, except on sources adjusted afterward.
 
-A sustained pre-fader warning takes exclusive priority because the OBS fader and Accessible Volume Console cannot repair distortion that already exists before them. The warning dialog explains that the user must lower the microphone, audio-interface, Windows input, or source-application gain. No tone plays while this decision dialog is open. Yes is the default and starts the low warning tone while the source remains red. No or Escape adds the unchanged source to the pre-fader stop list and saves the choice for future launches. Until the source produces sustained active non-red input or the user chooses No, every other automatic warning is suppressed. The low warning tone uses a stable volume instead of restarting as the output fluctuates. Changing the source name, type, signal path, device identity, or settings ends the incident and causes the changed source to be checked afresh.
+Letter commands are not intercepted in editable controls. H and K report no selected source if none has been selected.
 
-Silence does not count as a successful adjustment. After two seconds without a measurable signal, Audible Meter announces **No signal from the monitored source**, and repeats that announcement ten seconds later. If silence continues for another ten seconds, a Yes-default dialog asks whether to continue. Yes waits without repeating the silence sequence until a signal returns. No or Escape adds the unchanged source to the pre-fader stop list. When active non-red input remains long enough to confirm the adjustment, Audible Meter stops its tone and displays a safe-level message. Other queued pre-fader problems and normal output warnings remain paused until the user acknowledges that message with OK.
+### Understand the tones
 
-While the Accessible Volume Console is open, its focused source produces the normal yellow or red measurement tones and output-warning timing is paused. Pre-fader detection continues in the background. A source that develops a sustained pre-fader problem is queued without interrupting the Console. If it returns to a healthy active level before the Console closes, the stale warning is discarded; silence keeps it queued. Closing the Console stops all tones and presents the highest-priority queued pre-fader decision before normal output warnings resume. If the user tries to open the Console during active pre-fader adjustment, a Yes-default dialog asks whether to continue adjusting. Yes keeps the Console closed and resumes guidance; No or Escape adds the source to the stop list and opens the Console.
+- **Low:** after you agree to adjust an input, it is still too high before the OBS fader. Lower the device, Windows input, or source application's gain.
+- **Middle:** the focused console source is in OBS's yellow output zone.
+- **High:** the focused console source is in red, or an automatic output warning is active.
+- **Silence in the console:** green level, no signal, unavailable source, or focus outside source controls.
 
-The tones mean:
+Console tones are immediate measurements. Automatic warnings require accumulated exposure above a boundary. Turning warnings off with I leaves console measurement tones available.
 
-- Lower tone: after the user agrees to adjust it, an eligible live input's pre-fader signal remains in red, so sound quality may already be reduced before the OBS volume control. The decision dialog itself is silent. Answering No adds only this source identity to the pre-fader stop list.
-- Middle tone: the source currently focused in the Accessible Volume Console is in OBS's yellow output zone.
-- Higher tone: either the focused Console source is in OBS's red output zone, or an automatic output warning is active because a source has remained sufficiently above the configured warning level.
-- Silence: the focused Console source is green, silent, unavailable, or no source control is focused.
+### Respond to warnings
 
-The I warning toggle affects the two automatic warnings and their announcements. It does not disable the Console's deliberate yellow and red measurement tones.
+For an output warning, adjust the fader or press Shift+I. Correction only lowers volume, respects the configured maximum, and cannot repair earlier distortion.
 
-Audible Meter settings affect automatic output warnings and Shift+I adjustment only. They do not change the Console's yellow and red zones, H/J/K/L measurements, or the pre-fader warning boundary.
+An input warning opens a silent dialog. Yes starts guidance while you lower the original input gain. No or Escape adds that unchanged source to the pre-fader stop list. Silence does not count as success: no-signal announcements are followed by a question about continuing. A sustained healthy signal ends guidance; acknowledge the success message to resume other warnings.
 
-While Audible Meter is active, H reports the current level of the source most recently focused in the Console; J reports the name and current level of the loudest source; K reports the selected source's typical active level for the session; and L reports the source with the loudest typical active level. I, Shift+I, Ctrl+Shift+I, H, J, K, and L are intercepted only while Audible Meter is active and never while typing in an editable control. If no source has been selected, H and K announce “No Source Selected”.
+While the console is open, output-warning timing pauses and input problems queue. Closing it presents any still-relevant input problem. Opening it during input guidance asks whether you want to continue adjusting; No saves the opt-out and opens the console.
 
-Audible Meter does not create, change, enable, disable, or remove filters. It continues operating before, during, and after streaming or recording. Session measurements use fixed-size memory; no history or report files are written. Pre-fader opt-outs are settings, stored in `obs-studio\plugin_config\accessible-studio\audible-meter-input-decisions.json`; each record contains the source name, type, signal path or device identifier, and an identity fingerprint derived from the source settings and local-file metadata.
+Under **Advanced Sound Settings > Audible Meter**, adjust warning exposure, safety margin, maximum reduction, and the stop list. These settings do not change console zones or H/J/K/L measurements. There are no separate meter modes, history windows, or report files.
 
-## Sound Doctor
+## Review sound with Sound Doctor
 
-Press Ctrl+Shift+D or choose **Tools > Accessible Studio > Audio Tools > Sound Doctor** to start **Sound Doctor**. The introductory dialog explains the session and offers **Start** and **Not Now**. Enter activates Start. Escape closes the dialog without starting.
+Sound Doctor and Audible Meter cannot run together. Sound Doctor uses numerical levels, not speech recognition or AI.
 
-While Sound Doctor is monitoring, press Ctrl+Shift+D or choose its menu command again to interrupt it. A Yes-default confirmation asks whether to discard the collected measurements; No or Escape continues monitoring. Selecting **Don’t show this message again** and then choosing Yes saves a global preference so later activations interrupt immediately. Immediate interruption is confirmed with an accessible announcement. If the recommendations window is already open, the command returns focus to that window instead.
+1. Press Ctrl+Shift+D and choose **Start**.
+2. Use representative speech and sound for at least two minutes. A source needs 45 seconds of active signal for processing recommendations.
+3. Stop streaming and recording before reviewing results. Measurement can continue beyond two minutes while either output is active.
+4. Read the recommendations. All checkboxes start unchecked; select only changes you want.
+5. Choose **Finish** to apply selected changes, or Escape to close without applying them.
 
-Sound Doctor observes active audio sources for at least two minutes while you use them normally. It stores only fixed-size measurements in memory; it does not record or save audio. If streaming or recording is active, monitoring may continue beyond two minutes and the recommendations remain hidden until both have stopped. If streaming or recording starts while a report is open, the report is hidden and returns after both have stopped.
+Compression may help a likely live input with large level variation. A limiter protects against future peaks. Sound Doctor cannot reliably distinguish speech from music; leave music compression unselected unless you want that effect.
 
-The keyboard-accessible WebView2 report explains each recommendation and shows an initially unchecked **Apply this change automatically** checkbox. For likely live inputs, Sound Doctor recommends adaptive 2:1, 2.5:1, or 3:1 compression when measured dynamics exceed the configured threshold, without requiring near-clipping peaks. It recommends preventive final-chain limiting for active likely-live inputs by default; advanced users may extend that recommendation to all active sources. Existing compressors and limiters are never duplicated, and a changed source is left untouched.
+The report also describes existing filters, possible clipping, changed sources, and insufficient evidence. Sources and filters are checked again before application. Existing processing is not duplicated. A new compressor follows existing processing and precedes a newly added final limiter. Added filters have Sound Doctor names and support OBS Undo and Redo.
 
-Activate **Finish** to apply only the selected changes and close the report. Escape closes it without applying changes. Before applying anything, Sound Doctor verifies that the source and its relevant filters have not changed. Added filters use visible **Sound Doctor – Compressor** or **Sound Doctor – Limiter** names and carry an internal Sound Doctor marker. They are inserted in a deliberate order and can be reversed with OBS's normal Undo command.
+Press Ctrl+Shift+D again to interrupt and discard a session after confirmation. No or Escape continues. The confirmation can be disabled with its remember-choice option. If results are already open, the command returns to them. Results hide while streaming or recording is active.
 
-## Output status
+Use **Advanced Sound Settings > Sound Doctor** to change recommendation settings. Apply saves without closing; OK saves and closes; Cancel discards edits since the last Apply. The [audio FAQ](docs/Sound-Features-FAQ.en-US.html) explains the thresholds.
 
-Completed changes to streaming, recording, recording pause, the Virtual Camera, and Studio Mode are announced through the active Windows accessibility client. A stream disconnection additionally announces the reconnect attempt and its success without repeating every retry. Alt+F2 opens **Status Information**, which reports streaming as off, starting, on, reconnecting, or stopping; recording as off, on, or paused; and the Virtual Camera and Studio Mode as on or off. Enter or Escape closes the window without changing anything.
+## Seek within media
 
-F7 continues to start or stop recording, including stopping a paused recording. Alt+F7 pauses or resumes a running recording. If no recording is running, or the current OBS output configuration cannot be paused, the plugin announces that condition.
+Select a playable media source, then press Ctrl+M when its Media Controls are visible. Within those controls:
 
-## Canvas Describer and approved fixes
+- Left / Right: back / forward 5 seconds.
+- Shift+Left / Shift+Right: back / forward 1 minute.
+- Page Up / Page Down: back / forward 5 minutes.
 
-An API key is optional and is never requested for ordinary plugin functions. Open **Tools > Accessible Studio > Video Tools > Manage OpenAI API Keys** when you want to save, replace, or remove a key. The Qt dialog supports standard keyboard navigation. A stored key is never displayed. The key format and OpenAI authentication are checked before Windows Credential Manager encrypts it for the current Windows account; an existing key is retained if its replacement cannot be validated or saved. **I Have No Key Yet** appears only when no key is stored, while **Remove key** appears only when a key is stored. Removal requires confirmation and reports whether it succeeded. OpenAI features remain blocked without a key, while all other plugin functions continue to work.
+Other controls keep their normal key behavior.
 
-All five Canvas Describer keyboard shortcuts capture the rendered OBS canvas without requiring preview focus. A brief click confirms that the request has started. The current control remains focused while capture and upload begin. The WebView2 result window then receives focus; closing it restores the previous OBS control when appropriate and does not steal focus from another application. Every newly received initial or follow-up answer is announced once through an assertive ARIA live region; status messages and older answers are not reannounced. Questions are never echoed into the conversation.
+## Describe and check the picture
 
-**Copy Latest Result** copies only the newest answer to the Clipboard, without headings, status messages, or earlier conversation turns.
+Save a key through **Video Tools > Manage OpenAI API Keys**. After validation, Windows Credential Manager stores it for your Windows account. A stored key is never displayed. Failed replacement leaves the existing key intact; removal requires confirmation.
 
-All five modes permit image-related follow-up questions. Image text and follow-up messages are treated as untrusted content. Unrelated questions are refused, and the image conversation ends when the window closes or another direct capture begins.
+A canvas shortcut captures the rendered OBS image. A click confirms the request. Results open in an accessible WebView2 window; closing it restores focus when appropriate. New answers are announced once. **Copy Latest Result** copies only the latest answer.
 
-Basic Description is also a starting point. Detailed Description is always offered without resubmitting the image. Read Text appears only when text is detected; People and Backgrounds appears only when people are detected. Suggested Fixes appears only when the plugin has a specific approved OBS transform that can address a detected issue. A successful preset disappears while other relevant presets remain.
+Ask image-related follow-up questions or choose available preset descriptions. These reuse the image conversation. Closing the window or starting a new capture ends that conversation. **Check Again** submits a fresh frame to compare changes.
 
-People and Backgrounds makes visible people the primary subject, then describes their immediate backgrounds. Unrelated interface, text, and scene details are omitted unless they directly affect a person's presentation.
+Visual Checker rates visible problems by their effect on viewers. It checks lighting, framing, cropping, scale, blur, grain, blank captures, obstructions, and distracting backgrounds. It does not judge wording, facts, opinions, spelling, or caption meaning. Text matters only when its visual presentation is a problem. Ordinary Zoom controls or borders alone do not establish that a meeting is windowed.
 
-**Visual Checker** detects visual problems before considering automatic fixes and rates them by viewer impact. High means important content is substantially hard or impossible to see or understand; medium means presentation is clearly degraded but remains understandable; low means a minor imperfection that does not materially hinder viewing. Automatic fixability does not raise or lower severity. The checker explicitly examines lighting, subject visibility, framing, cropping, excessive empty space, scale, composition, blank capture, image quality, obstructing interfaces, and distracting backgrounds.
+### Apply a suggested fix
 
-For Zoom, a thin colored border, ordinary bottom controls, participant overlays, or participant arrangement alone no longer causes a non-full-screen diagnosis. A confidently windowed meeting requires stronger evidence such as an operating-system title bar, visible desktop outside Zoom, substantial Zoom Workplace panels, or another substantial frame reducing the meeting area. Standard controls in an otherwise full-screen Zoom meeting are only a low-severity issue. The checker also identifies participant camera tiles that clearly contain portrait video with substantial black bars on both sides. It uses a clearly readable display name only to identify that participant when possible, otherwise the tile position, and recommends landscape orientation.
+**Suggested Fixes** or **Fix Automatically** opens a video-source chooser, then applicable fixes and risks. With one source, the chooser is skipped. You approve one fix at a time.
 
-Visual Checker otherwise ignores verbal content: language, spelling, grammar, translation, wording, facts, calculations, subject matter, names, numbers, opinions, tone, appropriateness, captions, and subtitles are not issues. Text can be reported only as a visual object when it is too small, clipped, blurred, low contrast, obstructed, or obstructs important visuals. A dialog or error window can be reported only when it visibly covers content or reveals a capture or layout problem, not because of its message. Automatic-fix controls appear only for approved whole-source transforms; a second automatic-action audit can add action identifiers but cannot replace the original issues or severities. When visual issues remain, **Check Again** captures and submits a fresh frame, compares it with the earlier frame, and reports improvements, regressions, changes, and unresolved visual issues.
+Only supported whole-source transforms are available. Stretch to Screen is never offered. This feature cannot control outputs, audio, credentials, scene deletion, or arbitrary commands.
 
-The **Suggested Fixes** and **Fix Automatically** links expose only applicable items from a bounded list of reversible OBS source transforms. Activating either link closes the results window and opens a list containing only video-capable sources; if exactly one is available, it is selected automatically and the source list is skipped. After one source is selected, a second list presents the applicable fixes and their risk levels. Only one fix can be selected and applied at a time. For off-canvas or improperly centered content, Fit to Canvas is prioritized. After the user approves it, the plugin captures a fresh frame and asks the model only whether enlargement made the image unusably blurred, grainy, noisy, or pixelated. If quality is unacceptable or cannot be confirmed, the plugin automatically undoes Fit and applies Center Fully instead. Stretch to Screen is never offered. OBS’s own actions and Undo history are used. Streaming, recording, audio, credentials, arbitrary commands, scene deletion, and output settings cannot be controlled through this feature.
+After Fit to Canvas, a further image check can assess enlargement quality. If quality is unacceptable or cannot be confirmed, recovery restores captured transforms and centers the source only when the scene and transforms still match the expected state. It does not invoke general Undo after the network wait or overwrite intervening edits. The online quality check is skipped in Studio Mode because Preview and Program can differ.
 
-## Compatibility analysis
+## Compatibility, privacy, and cost
 
-When OBS is newer than the tested major release, the warning offers **Cancel**, **Run Anyway**, and **Analyze Compatibility**. Analysis combines local read-only probes with official OBS sources searched through OpenAI. It reports Low, Medium, High, or Unknown risk; it never guarantees compatibility.
+For an OBS major version beyond the tested range, the plugin offers Cancel, Run Anyway, or Analyze Compatibility. Analysis combines local read-only checks with official OBS information through OpenAI. It estimates risk, not guaranteed compatibility. A successful report is cached for the exact OBS version, plugin version, and architecture, and copied to the Clipboard.
 
-A successful report is saved for the exact OBS version, Accessible Studio version, and architecture. Reopening it does not contact OpenAI again. The report is displayed in an accessible WebView2 window and copied to the Clipboard.
+Canvas analysis sends the captured image, OBS language, instructions, and follow-up questions to OpenAI. Check Again sends a new image. Compatibility analysis sends version and dependency information and a description of plugin capabilities. The key authenticates requests; it is not analysis content. API charges are the key owner's responsibility.
 
-## Privacy and cost
-
-Canvas analysis sends the captured canvas, OBS locale, the fixed safety prompt, and valid follow-up questions to OpenAI. Preset descriptions reuse the existing response chain without resubmitting the frame. Check Again intentionally sends a fresh frame for comparison. Compatibility analysis sends version and dependency information plus a fixed plugin capability manifest; it does not send scenes, media, credentials, or the API key itself as content. OpenAI API charges belong to the key owner. No telemetry, advertising, or unrelated network request is included.
+Audio tools work locally with fixed-size level statistics in memory. They do not record or transmit audio or save measurement histories. Preferences and input-warning opt-outs are retained. The plugin includes no advertising or telemetry.
 
 ## Troubleshooting
 
-- If the plugin does not appear, confirm that OBS is 64-bit and was closed during installation.
-- If F3 reports that no key is stored, save the key through OpenAI Settings.
-- If a keyboard shortcut does not fire, inspect the Keyboard Shortcut Editor, OBS Settings > Hotkeys, and Advanced > Hotkey Focus Behavior.
-- If Media Controls are unavailable, select a currently playable media source so OBS displays them.
-- If WebView2 cannot initialize, repair its Microsoft runtime or run the Accessible Studio installer again while connected to the Internet.
+- **Plugin missing:** check OBS is 64-bit and was closed during installation.
+- **Shortcut unavailable:** check the shortcut editor, OBS Hotkeys, conflicts, and Hotkey Focus Behavior.
+- **No API key:** open Manage OpenAI API Keys; other features remain available.
+- **No Media Controls:** select a playable source and make its controls visible.
+- **Results window unavailable:** repair WebView2 or rerun Setup with Internet access.
+- **Two volume numbers in JAWS:** use the value followed by “dB”; see Adjust source volume.
 
-## License and contact
+## Project and license
 
-Copyright (C) 2026 [Tiflo.Info](https://tiflo.info). Licensed under GNU GPL version 2 or later. See [LICENSE.txt](LICENSE.txt) and [LICENSE-GPL-2.0.txt](LICENSE-GPL-2.0.txt). Project names and logos are separately protected branding and are not an additional restriction on GPL-covered code.
+Accessible Studio is an independent third-party plugin, not developed, sponsored, or endorsed by the OBS Project or its contributors. OBS and OBS Studio are registered trademarks of Wizards of OBS LLC.
 
-Localized documentation: [Deutsch](docs/README.de-DE.md), [Español](docs/README.es-ES.md), [Français](docs/README.fr-FR.md), [Русский](docs/README.ru-RU.md), [Українська](docs/README.uk-UA.md).
+Copyright © 2026 [Tiflo.Info](https://tiflo.info). GNU GPL version 2 or later; see [LICENSE.txt](LICENSE.txt) and [LICENSE-GPL-2.0.txt](LICENSE-GPL-2.0.txt). Names and logos remain separately protected branding.
+
+Other languages: [Deutsch](docs/README.de-DE.md), [Español](docs/README.es-ES.md), [Français](docs/README.fr-FR.md), [Русский](docs/README.ru-RU.md), [Українська](docs/README.uk-UA.md).

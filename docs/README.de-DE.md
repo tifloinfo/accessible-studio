@@ -1,98 +1,186 @@
-# Accessible Studio 1.1.3
+# Accessible Studio: Benutzerhandbuch
 
-Accessible Studio ist ein Windows-Zugänglichkeits-Plugin für die 64-Bit-Version von OBS Studio 32. Es richtet sich an blinde Tastatur- und Screenreader-Nutzer und wurde für JAWS und NVDA entwickelt. Windows 10 oder 11 wird benötigt. Ein OpenAI-API-Schlüssel und Internetzugang sind nur für OpenAI-Funktionen erforderlich.
+Accessible Studio ergänzt OBS Studio unter Windows um Tastaturbedienung, Sprachausgaben, Audiowerkzeuge und eine optionale Bildanalyse. Das Plugin richtet sich an blinde Menschen, die mit JAWS oder NVDA arbeiten.
 
-Accessible Studio ist ein unabhängiges Barrierefreiheits-Plugin eines Drittanbieters für OBS Studio. Es wird weder vom OBS Project oder dessen Mitwirkenden entwickelt noch ist es mit ihnen verbunden, von ihnen gesponsert oder unterstützt. OBS und OBS Studio sind eingetragene Marken von Wizards of OBS LLC.
+Einzelheiten zu Messwerten und Filtern stehen in den [Fragen zu den Audiofunktionen](Sound-Features-FAQ.de-DE.html).
 
-## Installation
+## Installieren, aktualisieren und entfernen
 
-Installieren Sie die 64-Bit-Version von OBS Studio 32.0 oder neuer und starten Sie `AccessibleStudio-1.1.3-Setup.exe`. Fehlt OBS Studio, ist die Installation beschädigt oder älter als 32.0, bietet Setup die [offizielle OBS-Download-Seite](https://obsproject.com/download) an und beendet sich ohne Änderungen. Eine ältere Version kann auch in OBS Studio über Hilfe > Nach Updates suchen aktualisiert werden. OBS Studio 32.x wird unterstützt. Bei OBS Studio 33 oder neuer warnt Setup vor möglicher Inkompatibilität und verweist auf die [Seite der neuesten Plugin-Version](https://github.com/tifloinfo/accessible-studio/releases/latest), bevor eine ausdrückliche Installation trotzdem möglich ist. Läuft OBS Studio, fordert Setup zum vollständigen Schließen und anschließenden Auswählen von Wiederholen auf; es beendet OBS niemals automatisch. Das Plugin wird unter `C:\ProgramData\obs-studio\plugins\accessible-studio` installiert. Fehlende Microsoft-WebView2- und Visual-C++-Komponenten werden erst nach diesen Prüfungen ergänzt; OBS- und Qt-Dateien werden nicht ersetzt. Auf der Abschlussseite öffnet das Kontrollkästchen **ReadMe im Webbrowser öffnen** die deutsche HTML-Dokumentation.
+Vorausgesetzt werden Windows 10 oder 11 und OBS Studio 32.x, jeweils in der 64-Bit-Version. Einen OpenAI-API-Schlüssel benötigen nur die Bild- und Kompatibilitätsanalyse. Audiowerkzeuge und Tastaturfunktionen arbeiten ohne Schlüssel.
 
-Wenn die veröffentlichte Version Accessible OBS Studio 1.0 installiert ist, wird sie automatisch deinstalliert; nur ihre Plugin-Einstellungen, Tastenkombinationen, zwischengespeicherten Daten und der gespeicherte OpenAI-API-Schlüssel werden entfernt. Andere OBS-Einstellungen und Inhalte bleiben erhalten.
+1. Installieren Sie OBS von der [offiziellen Downloadseite](https://obsproject.com/download).
+2. Schließen Sie OBS und starten Sie das Installationsprogramm Ihrer Accessible-Studio-Version.
+3. Folgen Sie den Anweisungen. Fehlende Komponenten von Microsoft WebView2 und Visual C++ werden von Microsoft heruntergeladen. Dafür ist Internetzugang erforderlich.
+4. Starten Sie OBS und öffnen Sie **Werkzeuge > Accessible Studio**.
+
+Fehlt OBS, ist es beschädigt oder älter als 32.0, wird die Installation abgebrochen. Bei OBS 33 oder neuer erscheint eine Kompatibilitätswarnung mit Verweis auf die [aktuelle Plugin-Version](https://github.com/tifloinfo/accessible-studio/releases/latest). Eine trotzdem durchgeführte Installation garantiert keine Kompatibilität. Setup fordert zum Schließen von OBS auf, beendet es aber nicht selbst.
+
+Das Plugin liegt unter `C:\ProgramData\obs-studio\plugins\accessible-studio`. OBS- und Qt-Dateien werden nicht ersetzt. Auf der letzten Installationsseite lässt sich das Handbuch öffnen.
+
+**Umstieg von Accessible OBS Studio 1.0:** Das alte Plugin samt eigenen Einstellungen, Tastenkombinationen, Cache und API-Schlüssel wird entfernt. Andere OBS-Einstellungen und Inhalte bleiben erhalten. Aktualisierungen innerhalb von Accessible Studio 1.1.x behalten Einstellungen und Schlüssel bei.
+
+Zum Deinstallieren schließen Sie OBS und entfernen Accessible Studio über die installierten Apps von Windows. Einstellungen und API-Schlüssel bleiben dabei erhalten. Einen nicht mehr benötigten Schlüssel entfernen Sie vorher über die API-Schlüsselverwaltung.
+
+## Befehle und Hilfe finden
+
+Unter **Werkzeuge > Accessible Studio** finden Sie **Audiowerkzeuge** mit Lautstärkekonsole, Audible Meter, Sound Doctor und erweiterten Audioeinstellungen. **Videowerkzeuge** enthält Bildbeschreibungen, Text lesen, Personen und Hintergründe, die visuelle Prüfung und die API-Schlüsselverwaltung.
+
+Dort stehen außerdem der Tastenkombinations-Editor und **Benutzerhandbuch öffnen** bereit. Das Handbuch öffnet sich im Browser in der OBS-Sprache, sofern vorhanden, sonst auf Englisch.
 
 ## Standard-Tastenkombinationen
 
-- F3: Kurzbeschreibung des Canvas mit höchstens 80 Zeichen.
-- Umschalt+F3: detaillierte Canvas-Beschreibung.
-- Alt+F3: sichtbaren Text ohne Übersetzung oder Kommentar lesen.
-- Strg+F3: sichtbare Personen und Hintergründe beschreiben.
-- F4: Visuelle Prüfung des Streams oder der Aufnahme auf Layout-, Kamera-, Beleuchtungs-, Bildausschnitt-, Schärfe-, Körnungs-, Erscheinungs-, Kleidungs-, Hintergrund- und Objektprobleme.
-- Strg+M: sichtbare Mediensteuerung fokussieren.
-- F5: Streaming starten oder beenden.
-- Alt+F2: Statusinformationen für Streaming, Aufnahme, virtuelle Kamera und Studiomodus anzeigen.
+Vorhandene Konflikte oder eigene Zuweisungen können diese Standards ändern.
+
+### Navigation
+
 - F6 / Umschalt+F6: nächster / vorheriger Hauptbereich.
-- F7: Aufnahme starten oder beenden.
-- Alt+F7: Aufnahme pausieren oder fortsetzen.
-- F8: virtuelle Kamera ein- oder ausschalten.
-- Strg+0 bis Strg+5: Videovorschau, Szenen, Quellen, Audiomixer, Szenenübergänge oder Steuerung fokussieren.
-- Strg+Gravis: barrierefreie Lautstärkekonsole öffnen. Gemeint ist die physische Taste direkt unter Escape.
-- Strg+I: Audible Meter starten oder beenden.
+- Strg+0: Videovorschau.
+- Strg+1: Szenen.
+- Strg+2: Quellen.
+- Strg+3: Audiomixer.
+- Strg+4: Szenenübergänge.
+- Strg+5: Steuerung.
+- Strg+M: sichtbare Mediensteuerung.
+- Alt+1 bis Alt+9: erste neun Szenen in Listenreihenfolge; Alt+0: zehnte Szene.
+
+Wird ausschließlich NVDA erkannt, wird der Bereichsname zusätzlich angesagt. Der native Audiomixer behält die normale OBS-Bedienung.
+
+### Ausgabe und Audio
+
+- F5: Stream starten oder stoppen.
+- F7: Aufnahme starten oder stoppen, auch bei pausierter Aufnahme.
+- Alt+F7: Aufnahme pausieren oder fortsetzen, sofern OBS dies unterstützt.
+- F8: virtuelle Kamera starten oder stoppen.
+- Alt+F2: Status von Stream, Aufnahme, virtueller Kamera und Studiomodus; Enter oder Escape schließt das Fenster.
+- Strg+Gravis: Lautstärkekonsole. Gemeint ist die physische Taste direkt unter Escape, unabhängig von ihrer Beschriftung.
+- Strg+I: Audible Meter ein- oder ausschalten.
 - Strg+Umschalt+D: Sound Doctor starten oder unterbrechen.
 
-Wenn NVDA als einziger laufender Screenreader erkannt wird, kündigt das Plugin nach einem erfolgreichen Bereichswechsel mit F6, Umschalt+F6 oder Strg+0 bis Strg+5 den lokalisierten Namen des Bereichs ausdrücklich an. Bei JAWS, Narrator, unbekannten Screenreadern oder mehreren gleichzeitig erkannten Screenreadern wird diese zusätzliche Ansage unterdrückt.
+Abgeschlossene Statusänderungen sowie Verbindungsabbruch und Wiederverbindung des Streams werden angesagt.
 
-Der Befehl **.Accessible Studio-Menü öffnen** öffnet das Menü des Plugins direkt, besitzt aber keine Standard-Tastenkombination. Seine interne Kennung bleibt unverändert, sodass eine vorhandene Zuweisung erhalten bleibt.
+### Bildanalyse
 
-Standardmäßig erzwingt Accessible Studio, dass alle OBS-Tastenkombinationen nur funktionieren, solange OBS die aktive Anwendung ist. Der Wert unter **Einstellungen > Erweitert > Hotkey-Fokusverhalten** wird auf **Hotkeys deaktivieren, wenn das Hauptfenster nicht fokussiert ist** gehalten und nach Änderungen wiederhergestellt. Aktivieren und speichern Sie im Tastenkombinations-Editor **OBS Studio verwalten lassen, ob Tastenkombinationen außerhalb von OBS funktionieren**, um die Steuerung an OBS zurückzugeben. Danach greift das Plugin nicht mehr ein.
+Diese Befehle benötigen API-Schlüssel und Internetzugang. Die Vorschau muss nicht fokussiert sein.
 
-Beim ersten Start und nach einem Profilwechsel werden geplante Standards mit vorhandenen Zuweisungen verglichen. Nur bei echten Konflikten erscheint ein modaler, screenreader-zugänglicher Dialog. Sie können ausschließlich die kollidierenden Kombinationen entfernen oder die vorhandenen Zuweisungen beibehalten; dann bleiben kollidierende Accessibility-Standards unbelegt. **Für diese Version nicht erneut fragen** merkt sich die gewählte Richtlinie profilübergreifend. Eine neue Plugin-Version oder ein neuer Build prüft erneut.
+- F3: Kurzbeschreibung mit höchstens 80 Zeichen.
+- Umschalt+F3: ausführliche Beschreibung.
+- Alt+F3: sichtbaren Text ohne Übersetzung oder Kommentar lesen.
+- Strg+F3: sichtbare Personen und ihre unmittelbare Umgebung beschreiben.
+- F4: visuelle Prüfung von Bildaufbau und Bildqualität.
 
-## Menü von Accessible Studio
+## Tastenkombinationen ändern
 
-**Werkzeuge > Accessible Studio** öffnet jetzt ein zugängliches Menü. **Audiowerkzeuge** enthält die barrierefreie Lautstärkekonsole, Audible Meter, Sound Doctor und **Erweiterte Audioeinstellungen**. **Videowerkzeuge** enthält kurze und detaillierte Canvas-Beschreibungen, Text lesen, Personen und Hintergründe, die visuelle Prüfung und die Verwaltung der OpenAI-API-Schlüssel. Das Hauptmenü enthält außerdem den Tastenkombinations-Editor und **Benutzerhandbuch öffnen**. Das Handbuch wird in der OBS-Oberflächensprache geöffnet, falls diese installiert ist, andernfalls auf Englisch.
+Öffnen Sie den Tastenkombinations-Editor, suchen Sie einen Befehl und wählen Sie ihn mit den Pfeiltasten. Enter oder **Hinzufügen oder Bearbeiten** öffnet die Zuweisung. Drücken Sie dort die gewünschte Kombination. Weitere Kombinationen lassen sich hinzufügen. Erst OK im Hauptfenster speichert die Änderungen.
 
-## Tastenkombinations-Editor
+Bei Konflikten fragt der Editor nach einer Neuzuweisung. Entf oder Entfernen im Hauptfenster löscht alle Zuweisungen des gewählten Befehls. Beim Schließen ungespeicherter Änderungen können Sie speichern, verwerfen oder zurückkehren. Navigations- und reservierte Systemtasten werden nicht aufgezeichnet.
 
-Öffnen Sie **Werkzeuge > Accessible Studio > Tastenkombinations-Editor**. Die Befehlsliste wird mit den Pfeiltasten bedient; Tab wechselt zum standardmäßig deaktivierten OBS-Hotkey-Steuerungs-Kontrollkästchen und zu den Schaltflächen. Eingabe oder **Hinzufügen oder Bearbeiten** öffnet den Dialog **Tastenkombination**. Dort sind mehrere Zuweisungen möglich. Eingabe oder OK prüft sofort auf Duplikate. Bei einem Konflikt wird der andere Befehl genannt; Nein kehrt zum Eingabedialog zurück, Ja weist die Kombination neu zu. Escape verwirft die Bearbeitung.
+Ändern sich Profil, Szenensammlung oder betroffene Zuweisungen während der Bearbeitung, kann das Speichern abgelehnt werden. Öffnen Sie den Editor dann erneut.
 
-## Audiomixer und Mediensteuerung
+Standardmäßig funktionieren OBS-Tastenkombinationen nur, wenn OBS aktiv ist. Aktivieren und speichern Sie die Option, OBS die Verwaltung von Tastenkombinationen außerhalb des Programms zu überlassen, um dessen eigene Fokuseinstellung zu verwenden.
 
-Strg+3 fokussiert den nativen Audiomixer. Das Plugin benennt, nummeriert und überwacht dessen Regler nicht mehr; verwenden Sie Tab und Umschalt+Tab mit der nativen OBS-Tastaturbedienung.
+Beim Start oder Profilwechsel können Sie vorhandene Konflikte beibehalten oder nur kollidierende Kombinationen durch Plugin-Standards ersetzen. Beibehalten lässt die betroffenen Standards unbelegt. Eine gespeicherte Entscheidung gilt profilübergreifend für diesen Build. Eigene, nicht leere Zuweisungen bleiben bei der Standardmigration erhalten. Der Befehl zum direkten Öffnen des Plugin-Menüs hat keine Standardkombination.
 
-Strg+Gravis öffnet die modale barrierefreie Lautstärkekonsole. Links und Rechts wechseln die Quelle, Hoch und Runter ändern die Lautstärke um 1 dB und Pos1 setzt 0 dB. Die Leertaste schaltet Monitoring und Programmausgabe sicher gemeinsam um, Strg+Leertaste nur das Monitoring und Umschalt+Leertaste nur die Ausgabe. Jede Quelle besitzt außerdem getrennte Schaltflächen für Ausgabe und Monitoring. 1 bis 9 wählen die ersten neun Quellen, 0 die zehnte. Die Konsole aktualisiert Quellenliste, Lautstärke, Ausgabe und Monitoring zweimal pro Sekunde aus OBS; Änderungen über den nativen Mixer, externe Controller oder Szenenwechsel werden daher während der Sitzung sichtbar. OBS 32.2 oder neuer behandelt Stummschaltung und Monitoring unabhängig; unter OBS 32.0 und 32.1 setzt die Konsole dieselben Befehle in die älteren Zustände „Nur Monitor“, „Monitor und Ausgabe“ und „stumm“ um. Beim Schließen wird der vorherige OBS-Fokus nur dann wiederhergestellt, wenn dies noch angemessen ist.
+## Lautstärke und Abhören
 
-Wenn sich der Fokus in der Mediensteuerung befindet, springen Links und Rechts 5 Sekunden zurück oder vor. Umschalt+Links und Umschalt+Rechts springen 1 Minute zurück oder vor, Bild auf 5 Minuten zurück und Bild ab 5 Minuten vor. Außerhalb der Mediensteuerung behalten diese Tasten ihre normale Funktion.
+Strg+Gravis öffnet die barrierefreie Lautstärkekonsole. Änderungen wirken sofort.
 
-Die Lautstärkekonsole zeigt anfangs nur Quellen der aktuellen Programmausgabe; Vorschauquellen im Studiomodus sind ausgeschlossen. Aktivieren Sie die nicht als Standardschaltfläche festgelegte Schaltfläche **Alle Quellen anzeigen** mit Eingabe, um alle Mixerquellen anzuzeigen, aktive Quellen zuerst. Danach heißt dieselbe Schaltfläche **Nur aktive Quellen anzeigen**. Die Leertaste aktiviert diese Ansichtsschaltfläche nicht.
+- Links / Rechts: vorherige / nächste Quelle.
+- Hoch / Runter: fokussierten Regler um 1 dB anheben / absenken.
+- Pos1: 0 dB einstellen.
+- 1 bis 9, danach 0: Quellen 1 bis 10 direkt wählen.
+- Leertaste: Monitoring und Programmausgabe gemeinsam umschalten.
+- Strg+Leertaste: nur Monitoring umschalten.
+- Umschalt+Leertaste: nur Programmausgabe umschalten.
+- Escape: schließen und zum vorherigen OBS-Steuerelement zurückkehren.
 
-Statusänderungen von Streaming, Aufnahme, Aufnahme-Pause, virtueller Kamera und Studiomodus werden für Screenreader angekündigt. Alt+F2 zeigt **Statusinformationen** einschließlich der Zustände „erneute Verbindung“ und „Aufnahme pausiert“. Alt+F7 pausiert oder setzt eine Aufnahme fort.
+Monitoring ist das lokale Abhören. Die Programmausgabe gelangt in Stream oder Aufnahme. Für beides gibt es auch eigene Schaltflächen.
 
-## Canvas-Beschreiber
+Zunächst erscheinen aktive Programmquellen; reine Vorschauquellen im Studiomodus fehlen. **Alle Quellen anzeigen** wird mit Enter aktiviert, nicht mit Leertaste. Links und Rechts erreichen auch Quellen jenseits der ersten zehn. Liste und Werte werden zweimal pro Sekunde aktualisiert.
 
-Alle fünf Canvas-Tastenkombinationen erfassen das gerenderte OBS-Canvas ohne Vorschaufokus. Ein kurzer Klickton bestätigt den Start. Das WebView2-Ergebnisfenster erhält danach den Fokus. Jede neu empfangene erste Antwort oder Antwort auf eine Anschlussfrage wird einmal über einen assertiven ARIA-Live-Bereich angekündigt; Fragen werden niemals wiederholt. Alle fünf Modi erlauben bildbezogene Anschlussfragen.
+Normalerweise endet der Regelbereich bei 0 dB. Bereits anderswo eingestellte positive Verstärkung bleibt erreichbar. Ab OBS 32.2 sind Stummschaltung und Monitoring unabhängig; ältere unterstützte Versionen verwenden die bisherigen Monitoring-Zustände.
 
-**Letztes Ergebnis kopieren** kopiert nur die neueste Antwort ohne Überschriften, Statusmeldungen oder frühere Gesprächsbeiträge in die Zwischenablage.
+Nach Hoch oder Runter wird der neue dB-Wert angesagt, auch am Anschlag. Schnelle Eingaben fassen ausstehende Ansagen zusammen. Ein Fokuswechsel beendet ausstehende Lautstärkeansagen.
 
-Die Kurzbeschreibung ist zugleich ein Ausgangspunkt. **Detaillierte Beschreibung** ist immer verfügbar, **Text lesen** nur bei erkanntem Text und **Personen und Hintergründe** nur bei erkannten Personen. Diese Voreinstellungen verwenden dasselbe Bild ohne erneuten Upload. **Vorgeschlagene Korrekturen** erscheint ausschließlich bei einer tatsächlich automatisch behebbaren OBS-Quellentransformation.
+**JAWS-Hinweis:** JAWS kann zuerst den alten Zahlenwert ausgeben, danach folgt die richtige Plugin-Ansage mit „dB“. Die Lautstärke wird dennoch korrekt geändert. Im gemeldeten Test unterdrückte Einfügen+3 vor der Pfeiltaste die veraltete Ansage. Das Problem wird an Vispero weitergegeben; die zusätzliche dB-Rückmeldung bleibt für JAWS und NVDA erhalten.
 
-**Personen und Hintergründe** stellt sichtbare Personen in den Mittelpunkt und beschreibt anschließend deren unmittelbaren Hintergrund. Nicht zugehörige Oberflächen-, Text- und Szenendetails werden ausgelassen, sofern sie die Darstellung einer Person nicht direkt beeinflussen.
+## Audible Meter verwenden
 
-**Visuelle Prüfung** prüft ausschließlich, wie der Stream oder die Aufnahme aussieht. Die bisherigen visuellen Prüfungen auf OBS-Layout, leere Aufnahmen, Kamera, Beleuchtung, Zoom-Vollbild, Bildausschnitt, Unschärfe, mögliche Linsenverschmutzung, Körnung, Erscheinung, Kleidung, Hintergrund und unerwünschte Objekte bleiben erhalten. Sprachliche Inhalte wie Sprache, Rechtschreibung, Grammatik, Übersetzung, Formulierung, Fakten, Zahlen, Thema, Ton, Angemessenheit, Untertitel und Beschriftungen werden ignoriert. Text wird nur als visuelles Objekt gemeldet, wenn er etwa zu klein, abgeschnitten, unscharf, kontrastarm oder verdeckt ist oder wichtige Bildinhalte verdeckt. Ein Dialog- oder Fehlerfenster wird nur gemeldet, wenn es Bildinhalt verdeckt oder ein sichtbares Aufnahme- oder Layoutproblem zeigt, niemals wegen seiner Meldung. Automatische Korrekturen werden nur für die feste Liste umkehrbarer OBS-Quellentransformationen angeboten. **Erneut prüfen** erfasst ein neues Bild und meldet visuelle Verbesserungen, Verschlechterungen, Änderungen und verbleibende visuelle Probleme.
+Strg+I schaltet einen einzigen fensterlosen Modus um. Er überwacht aktive Quellen auch ohne laufenden Stream oder Aufnahme. Warnungen sind beim Start eingeschaltet. Das Tool öffnet die Konsole nicht selbst und verändert keine Filter.
 
-Bei der Auswahl einer automatischen Korrektur enthält die Quellenliste nur videofähige Quellen; ist nur eine vorhanden, wird sie automatisch ausgewählt. Bei nicht korrekt positionierten Inhalten hat **An Canvas anpassen** Vorrang. Nach der Zustimmung wird ein neues Bild ausschließlich auf unbrauchbare Unschärfe, Körnung, Rauschen oder Pixelbildung geprüft. Wenn die Qualität nicht akzeptabel ist oder nicht bestätigt werden kann, wird die Anpassung automatisch rückgängig gemacht und stattdessen vollständig zentriert. **Auf Bildschirm strecken** wird niemals angeboten.
+Während Audible Meter aktiv ist:
 
-Ein API-Schlüssel wird in der Windows-Anmeldeinformationsverwaltung verschlüsselt gespeichert und niemals angezeigt. Format und OpenAI-Authentifizierung werden vor dem Speichern geprüft. **Ich habe noch keinen Schlüssel** erscheint nur ohne gespeicherten Schlüssel; **Schlüssel entfernen** nur mit einem gespeicherten Schlüssel. Das Entfernen benötigt eine Bestätigung und meldet den Erfolg.
+- I: automatische Eingangs- und Ausgangswarnungen umschalten.
+- H: aktueller Pegel und Zone der zuletzt in der Konsole gewählten Quelle.
+- J: aktuell lauteste Quelle und ihr Pegel.
+- K: typischer aktiver Pegel der gewählten Quelle in dieser Sitzung.
+- L: Quelle mit dem höchsten typischen aktiven Pegel.
+- Umschalt+I: bei einer Ausgangswarnung eine vorsichtige Absenkung anfordern.
+- Strg+Umschalt+I: letzte Absenkung zurücknehmen, soweit die Regler inzwischen unverändert sind.
 
-## Audible Meter
+In Texteingabefeldern werden diese Buchstaben nicht abgefangen. Ohne ausgewählte Quelle melden H und K dies ausdrücklich.
 
-Ausführliche technische Antworten zu Audible Meter, automatischer Korrektur, den Tönen der Lautstärkekonsole und Sound Doctor finden Sie in den [FAQ zu den Audiofunktionen](Sound-Features-FAQ.de-DE.html).
+### Töne und Warnungen
 
-Strg+I startet oder beendet Audible Meter; automatische Warnungen sind zunächst eingeschaltet. I schaltet die automatischen Eingangs- und Ausgangswarnungen gemeinsam aus oder ein. Während eine Ausgangswarnung ertönt, senkt Umschalt+I alle dafür verantwortlichen Quellen konservativ ab; die Lautstärke wird nie erhöht und eine einzelne Korrektur ist auf 12 dB begrenzt. Strg+Umschalt+I stellt die letzte automatische Korrektur wieder her, sofern der Pegel danach nicht anderweitig geändert wurde. Vorreglerwarnungen werden nicht automatisch korrigiert. H meldet den aktuellen Pegel der zuletzt in der Konsole fokussierten Quelle, J die aktuell lauteste Quelle und ihren Pegel, K den typischen aktiven Pegel der ausgewählten Quelle und L die Quelle mit dem höchsten typischen aktiven Pegel. I, Umschalt+I, Strg+Umschalt+I, H, J, K und L werden in Eingabefeldern nie abgefangen.
+Der **tiefe Ton** bedeutet nach bestätigter Eingangskorrektur: Das Signal ist vor dem OBS-Regler weiterhin zu hoch. Senken Sie den Pegel am Gerät, in Windows oder im Quellprogramm. Der **mittlere Ton** kennzeichnet Gelb bei der fokussierten Konsolenquelle. Der **hohe Ton** kennzeichnet dort Rot oder eine automatische Ausgangswarnung. Grün, Stille, fehlende Quellen und Fokus außerhalb der Quellensteuerung bleiben stumm.
 
-Alt+1 bis Alt+9 wechseln zu den ersten neun Szenen in der angezeigten Reihenfolge; Alt+0 wechselt zur zehnten Szene. Szenen nach den ersten zehn haben keine nummerierte Standardtastenkombination.
+Konsolentöne reagieren unmittelbar. Automatische Warnungen benötigen eine bestimmte Belastungsdauer. I schaltet nur Warnungen ab, nicht die Messtöne der Konsole.
 
-**Werkzeuge > Accessible Studio > Audiowerkzeuge > Erweiterte Audioeinstellungen** öffnet einen Einstellungsdialog nach dem Muster von OBS. Wechseln Sie in der linken Kategorienliste mit den Pfeiltasten zwischen **Audible Meter** und **Sound Doctor**. Die Audible-Meter-Seite enthält die Ausgangswarnungen und die Stoppliste. Die Sound-Doctor-Seite enthält die minimale Dynamikvariation, das maximale Kompressorverhältnis, den Geltungsbereich der Limiter-Empfehlungen und den empfohlenen Limiter-Grenzwert. Anwenden speichert ohne Schließen; OK speichert und schließt; Abbrechen verwirft Änderungen seit dem letzten Anwenden.
+Eine Eingangswarnung öffnet zunächst einen stummen Dialog. Ja startet die Korrekturhilfe. Nein oder Escape speichert diese unveränderte Quelle in der Pre-Fader-Ausnahmeliste. Stille gilt nicht als erfolgreiche Korrektur; nach Hinweisen auf fehlendes Signal wird nachgefragt. Ein anhaltend gesunder aktiver Pegel beendet die Hilfe. Bestätigen Sie die Erfolgsmeldung, damit andere Warnungen fortgesetzt werden.
 
-Eine anhaltende Vorreglerwarnung hat ausschließlichen Vorrang. Während des ersten Entscheidungsdialogs ertönt kein Warnton; Ja ist Standard und startet erst danach den tiefen Warnton. Nein oder Escape fügt die unveränderte Quelle der Vorregler-Stoppliste hinzu. Bei Stille erfolgt nach 2 Sekunden eine Meldung, nach weiteren 10 Sekunden eine Wiederholung und nach weiteren 10 Sekunden ein Ja-standardmäßiger Dialog. Nach einer erfolgreichen Korrektur stoppt der Ton; ein Sicherheitsdialog muss mit OK bestätigt werden. Während die Lautstärkekonsole geöffnet ist, läuft die Vorreglererkennung im Hintergrund weiter. Probleme werden vorgemerkt und nach dem Schließen der Konsole vor anderen Warnungen angezeigt. Beim Versuch, die Konsole während einer aktiven Vorregleranpassung zu öffnen, setzt Ja die Anpassung fort und hält die Konsole geschlossen; Nein oder Escape fügt die Quelle der Stoppliste hinzu und öffnet die Konsole.
+In der offenen Konsole pausiert die Zeitmessung für Ausgangswarnungen; Eingangsprobleme werden vorgemerkt. Beim Schließen werden noch aktuelle Probleme gemeldet. Wollen Sie die Konsole während einer Eingangskorrektur öffnen, fragt das Plugin nach; Nein speichert die Ausnahme und öffnet die Konsole.
+
+Unter den erweiterten Audioeinstellungen ändern Sie Warnschwelle, Belastungsdauer, Sicherheitsabstand, maximale Absenkung und Ausnahmeliste. Konsolenzonen und H/J/K/L-Messungen bleiben unverändert. Es gibt keine zusätzlichen Messmodi, Verlaufsfenster oder Berichtsdateien.
 
 ## Sound Doctor
 
-Strg+Umschalt+D oder **Werkzeuge > Accessible Studio > Audiowerkzeuge > Sound Doctor** startet **Sound Doctor**. Der Einführungsdialog bietet **Start** und **Nicht jetzt**. Während der Überwachung öffnet derselbe Befehl eine Ja-standardmäßige Bestätigung zum Unterbrechen und Verwerfen der Messwerte. **Diese Meldung nicht mehr anzeigen** speichert die sofortige Unterbrechung nur zusammen mit Ja. Nein oder Escape setzt die Überwachung fort. Sound Doctor beobachtet aktive Audioquellen mindestens zwei Minuten lang und speichert nur Messwerte fester Größe im Arbeitsspeicher; Audio wird weder aufgenommen noch gespeichert. Bei einer laufenden Übertragung oder Aufnahme wird der Bericht erst angezeigt, wenn beides beendet ist.
+Sound Doctor und Audible Meter können nicht gleichzeitig laufen.
 
-Der per Tastatur bedienbare WebView2-Bericht prüft typische Pegel, Spitzen, Dynamik, mögliche Übersteuerung sowie vorhandene Kompressoren und Limiter. Jede begründete Empfehlung besitzt ein zunächst nicht markiertes Kontrollkästchen **Diese Änderung automatisch anwenden**. **Fertig stellen** wendet nur markierte Änderungen an; Escape wendet nichts an. Neue Filter heißen sichtbar **Sound Doctor – Compressor** oder **Sound Doctor – Limiter**, tragen zusätzlich eine interne Kennzeichnung und können über die normale OBS-Rückgängig-Funktion zurückgenommen werden.
+1. Strg+Umschalt+D drücken und den Start bestätigen.
+2. Mindestens zwei Minuten typische Sprache und andere Klänge verwenden. Jede Quelle benötigt 45 Sekunden aktives Signal für Filtervorschläge.
+3. Stream und Aufnahme beenden, bevor Ergebnisse angezeigt werden. Bis dahin kann die Messung weiterlaufen.
+4. Vorschläge lesen und gewünschte Änderungen markieren; zunächst ist nichts ausgewählt.
+5. Mit **Fertig** übernehmen oder mit Escape ohne Änderungen schließen.
 
-## Datenschutz und Lizenz
+Kompression kann starke Pegelschwankungen eines wahrscheinlichen Live-Eingangs ausgleichen. Ein Limiter kann unerwartete Spitzen begrenzen. Das Tool versteht keine Inhalte und unterscheidet Sprache nicht zuverlässig von Musik. Wählen Sie Musikkompression nur, wenn dieser Effekt erwünscht ist.
 
-Canvas-Funktionen senden das erfasste Bild, die OBS-Sprache, feste Sicherheitsanweisungen und gültige Anschlussfragen an OpenAI. Voreinstellungen verwenden die bestehende Antwortkette; **Erneut prüfen** sendet absichtlich ein neues Vergleichsbild. Der API-Schlüssel wird nicht als Inhalt übertragen. Es gibt keine Telemetrie oder Werbung.
+Quellen und Filter werden vor dem Übernehmen erneut geprüft. Veränderte Quellen werden übersprungen, vorhandene Verarbeitung wird nicht dupliziert. Neue Kompressoren folgen bestehenden Filtern; ein gleichzeitig hinzugefügter Limiter kommt danach ans Ende. Die neuen Filter tragen Sound-Doctor-Namen und unterstützen Rückgängig und Wiederholen in OBS.
 
-Copyright (C) 2026 [Tiflo.Info](https://tiflo.info). GNU GPL Version 2 oder neuer; siehe [LICENSE.txt](../LICENSE.txt). [English](../README.md).
+Erneutes Strg+Umschalt+D unterbricht die Messung nach Bestätigung und verwirft sie. Nein oder Escape setzt sie fort. Die Bestätigung lässt sich dauerhaft abschalten. Ein bereits offener Bericht erhält stattdessen den Fokus und bleibt während Stream oder Aufnahme verborgen.
+
+Die Sound-Doctor-Seite der erweiterten Audioeinstellungen steuert Vorschläge. Anwenden speichert; OK speichert und schließt; Abbrechen verwirft Änderungen seit dem letzten Anwenden. Details stehen in den [Audiofragen](Sound-Features-FAQ.de-DE.html).
+
+## Medien durchsuchen
+
+Strg+M fokussiert sichtbare Mediensteuerungen. Dort springen Links/Rechts um 5 Sekunden, Umschalt+Links/Rechts um 1 Minute und Bild auf/Bild ab um 5 Minuten zurück/vor. Außerhalb dieser Steuerung bleiben die Tasten unverändert.
+
+## Bilder beschreiben und prüfen
+
+Speichern Sie einen API-Schlüssel über die Videowerkzeuge. Er wird geprüft und für Ihr Windows-Konto in der Windows-Anmeldeinformationsverwaltung gespeichert, aber nie angezeigt. Eine fehlgeschlagene Ersetzung bewahrt den bisherigen Schlüssel; Löschen erfordert Bestätigung.
+
+Ein Bildbefehl erfasst das gerenderte OBS-Bild. Ein Klick bestätigt den Auftrag. Ergebnisse erscheinen in einem zugänglichen WebView2-Fenster; neue Antworten werden einmal angesagt. Beim Schließen wird der Fokus nach Möglichkeit zurückgegeben. **Neuestes Ergebnis kopieren** kopiert nur die letzte Antwort.
+
+Bildbezogene Rückfragen und angebotene Beschreibungen verwenden dieselbe Bildunterhaltung. Schließen oder eine neue direkte Aufnahme beendet sie. **Erneut prüfen** sendet ein neues Bild zum Vergleich.
+
+Die visuelle Prüfung bewertet Sichtbarkeit, Licht, Ausschnitt, Skalierung, Unschärfe, Störungen und störende Hintergründe. Sie bewertet keine Aussagen, Rechtschreibung oder Meinungen. Text zählt nur als sichtbares Gestaltungselement. Gewöhnliche Zoom-Bedienelemente oder Ränder allein beweisen keinen Fenstermodus.
+
+Vorgeschlagene automatische Korrekturen bieten eine Videoquelle und anschließend passende Transformationen mit Risiken an. Bei nur einer Quelle entfällt die Auswahl. Sie bestätigen jeweils eine Änderung. Strecken auf Bildschirmgröße wird nie angeboten; Audio, Ausgaben, Zugangsdaten und Szenenlöschung sind ausgeschlossen.
+
+Nach dem Einpassen kann eine weitere Bildanalyse die Qualität prüfen. Bei schlechter oder unklarer Qualität stellt die Wiederherstellung die erfassten Transformationen nur dann wieder her und zentriert, wenn Szene und Zustand noch passen. Zwischenzeitliche Änderungen werden nicht durch einen allgemeinen Rückgängig-Befehl überschrieben. Im Studiomodus entfällt diese Onlineprüfung, weil Vorschau und Programm abweichen können.
+
+## Datenschutz und Kompatibilität
+
+Bildanalyse sendet Bild, OBS-Sprache, Anweisungen und Rückfragen an OpenAI. Eine Kompatibilitätsanalyse sendet Versions- und Abhängigkeitsdaten sowie eine Funktionsbeschreibung. Der Schlüssel dient der Anmeldung, nicht als Analyseinhalt. API-Kosten trägt der Schlüsselinhaber.
+
+Bei neueren OBS-Hauptversionen stehen Abbrechen, trotzdem starten oder Kompatibilität analysieren zur Wahl. Die Analyse kombiniert lokale Leseprüfungen mit offiziellen OBS-Informationen über OpenAI. Sie schätzt Risiken, garantiert aber nichts. Erfolgreiche Berichte werden für die genaue OBS-/Plugin-Version und Architektur gespeichert und in die Zwischenablage kopiert.
+
+Audiowerkzeuge arbeiten lokal ohne Tonaufnahmen, Audioübertragung oder Messverlauf. Einstellungen und Eingangsausnahmen bleiben gespeichert. Es gibt keine Werbung oder Telemetrie.
+
+## Probleme lösen
+
+Fehlt das Plugin, prüfen Sie 64-Bit-OBS und schließen Sie OBS vor einer erneuten Installation. Bei fehlenden Tastenkombinationen prüfen Sie Editor, Konflikte und OBS-Fokuseinstellung. Fehlende Mediensteuerungen erfordern eine abspielbare Quelle. Bei WebView2-Problemen reparieren Sie die Microsoft-Komponente oder starten Setup mit Internetzugang erneut.
+
+## Projekt und Lizenz
+
+Accessible Studio ist ein unabhängiges Drittanbieter-Plugin und wird nicht vom OBS Project oder dessen Mitwirkenden entwickelt, gesponsert oder unterstützt. OBS und OBS Studio sind eingetragene Marken von Wizards of OBS LLC.
+
+© 2026 [Tiflo.Info](https://tiflo.info). GNU GPL Version 2 oder neuer; siehe [Lizenz](../LICENSE.txt). Namen und Logos bleiben gesondert geschützte Kennzeichen. [English](README.en-US.html).

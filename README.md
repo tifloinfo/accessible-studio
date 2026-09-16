@@ -1,10 +1,13 @@
-# Source
+# Accessible Studio source
 
-This folder contains the authoritative source files for Accessible Studio.
+Accessible Studio is a Windows accessibility plugin for OBS Studio, designed for keyboard and screen-reader use.
 
-Accessible Studio is an independent, third-party accessibility plugin for OBS Studio. It is not developed by, affiliated with, sponsored by, or endorsed by the OBS Project or its contributors. OBS and OBS Studio are registered trademarks of Wizards of OBS LLC.
+- [User guide](PROJECT_README.md): installation, shortcuts, audio tools, and visual analysis.
+- [Sound Features FAQ](docs/Sound-Features-FAQ.en-US.md): measurements, warnings, and processing recommendations.
+- [Build instructions](BUILDING.md): dependencies, checks, documentation, and packaging.
+- [Reliability test notes](RELIABILITY-TEST-NOTES.md): the current test build and accepted changes.
+- [Abandoned experiments](ABANDONED-EXPERIMENTS.md): features that must not be restored.
 
-Keep project code, configuration, documentation sources, and other files needed to build or maintain the project here. Edit source files in this folder rather than generated copies in `outputs`.
+This repository contains the authoritative code and documentation. Edit Markdown sources, then regenerate HTML with the documented command. Do not edit packaged copies in outputs. Keep temporary experiments and release installers outside the repository; build output directories are ignored.
 
-Do not place temporary experiments, build artifacts, installers, or packaged releases here.
-
+Accessible Studio is an independent third-party plugin, not developed, sponsored, or endorsed by the OBS Project or its contributors. OBS and OBS Studio are registered trademarks of Wizards of OBS LLC.

@@ -1,125 +1,92 @@
-# Preguntas frecuentes sobre las funciones de sonido
+# Funciones de audio: preguntas y respuestas
 
-Este documento explica Sound Doctor, Audible Meter y la Consola de volumen accesible de Accessible Studio 1.1.3.
+Complemento de la [guía de uso](README.es-ES.html). No se necesita clave API.
 
-## Descripción general
+## ¿Qué herramienta conviene usar?
 
-### ¿Qué diferencia hay entre estas funciones?
+La **consola de volumen** regula ganancia, monitorización y salida de programa. **Audible Meter** emite avisos y lee mediciones. **Sound Doctor** realiza una sesión y propone filtros. Los dos últimos no pueden funcionar simultáneamente.
 
-**Audible Meter** vigila continuamente las fuentes activas y comunica problemas de nivel mediante tonos y anuncios del lector de pantalla. La **Consola de volumen accesible** permite inspeccionar y cambiar con el teclado el volumen, la salida y la monitorización de OBS. **Sound Doctor** ejecuta una sesión de diagnóstico independiente, analiza estadísticas de nivel y propone filtros opcionales de compresor y limitador. Audible Meter y Sound Doctor no pueden ejecutarse a la vez.
+Todos trabajan localmente con estadísticas de tamaño limitado en memoria. No graban ni transmiten audio ni guardan historial de mediciones o informes. Sí conservan preferencias y exclusiones de entrada.
 
-### ¿Graban, transmiten o conservan mi audio?
+## ¿Qué significan los valores?
 
-No. Solo leen valores numéricos de nivel proporcionados por OBS. No capturan la forma de onda, crean una grabación, envían audio por la red ni escriben historial de mediciones o informes en disco. Las estadísticas ocupan memoria de tamaño fijo y se descartan al detener la función. Solo se conservan preferencias normales y las identidades incluidas en la lista de exclusión anterior al control.
+Los dB de la consola son la ganancia del control: 0 dB no altera el nivel; valores negativos lo reducen. No son una medición de sonoridad.
 
-## Sound Doctor
+Los picos describen máximos breves. RMS representa la energía del audio y sirve para niveles típicos y variación dinámica. En dBFS, cuanto más cerca de 0, mayor nivel. Pre-fader significa antes del control OBS; post-fader, después. Bajar ese control no repara distorsión ya presente en la entrada.
 
-### ¿Qué hace exactamente?
+## ¿Por qué JAWS dice el volumen anterior?
 
-Inícielo con Ctrl+Mayús+D o desde **Herramientas > Accessible Studio > Herramientas de audio > Sound Doctor**. Tras confirmar, observa las fuentes activas durante 120 segundos mientras se usan normalmente. Una fuente debe aportar al menos 45 segundos de señal activa para optar a una recomendación. Si sigue activa una transmisión o grabación, la medición continúa y el informe espera hasta que ambas se detengan.
+Su gestión de flechas puede leer el número antiguo antes de que el complemento anuncie el resultado correcto con «dB». En la prueba comunicada, Insert+3 seguido de la flecha eliminó el anuncio antiguo. El ajuste funciona correctamente. El problema se remite a Vispero; la confirmación explícita sigue disponible para JAWS y NVDA.
 
-Por fuente conserva distribuciones de tamaño fijo del nivel RMS, observaciones de pico y tiempo activo, además de identidad, nivel inicial del control y huella de la cadena de filtros. También inspecciona compresores y limitadores existentes. No reconoce palabras o contenido ni envía mediciones a un servicio de IA.
+## ¿Cuándo suenan los tonos?
 
-### ¿Cómo decide que puede ayudar un compresor?
+Los avisos automáticos de salida dependen del tiempo acumulado sobre un umbral. Valores predeterminados: 1,5 segundos y el límite rojo OBS, −9 dBFS con pico de muestra o −2 dBFS con pico real. Bajadas inferiores a un segundo no reinician completamente la exposición; un segundo bajo el umbral prepara un nuevo aviso.
 
-Solo considera tipos que probablemente sean entradas en directo, como micrófonos y capturas directas de entrada. Compara la mediana RMS activa, el pasaje habitual, con el percentil 95, el pasaje fuerte. La diferencia es la variación dinámica.
+Con Audible Meter activo, la consola responde al instante: tono medio en amarillo y agudo en rojo. Límites amarillo/rojo: −20/−9 dBFS con pico de muestra; −13/−2 dBFS con pico real. Verde, falta de señal o fuente y foco fuera de sus controles no producen tono.
 
-Recomienda compresión únicamente si hay 45 segundos de señal activa, no cambiaron el volumen ni los filtros, la fuente es una probable entrada en directo y la variación alcanza el mínimo configurado. Si ya hay un compresor o limitador, aunque esté desactivado, no hace esta recomendación. El umbral se calcula con el nivel anterior al control de volumen. El nuevo compresor se añade después de los filtros existentes.
+El tono grave guía una corrección de entrada aceptada mientras el audio sigue rojo antes del control. Fuente multimedia y Fuente de vídeo VLC no generan avisos pre-fader.
 
-El umbral propuesto es la mediana más 5 dB, redondeado y limitado entre −24 y −10 dB. Ataque: 6 ms; liberación: 100 ms; ganancia de salida: 0 dB. La relación es adaptativa: 2:1 por debajo de 10 dB, 2,5:1 desde 10 hasta menos de 14 dB y el máximo configurado desde 14 dB. Los valores predeterminados son 8 dB de variación mínima y 3:1 de máximo.
+## ¿Puedo silenciar avisos y seguir midiendo?
 
-### ¿Distingue con certeza el habla de la música?
+Sí. I alterna avisos de entrada y salida mientras Audible Meter está activo. Reactivarlos inicia un nuevo cómputo de exposición. Los tonos de consola y H/J/K/L continúan disponibles. Estas letras nunca se interceptan en campos de edición.
 
-No. Los niveles describen volumen y dinámica, no contenido. El tipo de fuente solo es una aproximación a «entrada en directo». Un micrófono puede llevar música y una captura de aplicación puede llevar voz. Por eso el informe aconseja no seleccionar la compresión si la fuente es principalmente musical.
+H anuncia nivel y zona actuales de la fuente elegida; J, la más fuerte ahora. K da el RMS activo típico de la elegida durante la sesión; L identifica la fuente con mayor nivel típico. La selección corresponde a la última fuente enfocada en la consola.
 
-### ¿Cuándo recomienda un limitador?
+## ¿Cómo funciona la reducción solicitada?
 
-De forma predeterminada, para toda probable entrada en directo con 45 segundos activos, sin cambios durante la prueba y sin limitador existente. No exige recorte ni picos próximos al límite: es una protección preventiva de muro contra futuros picos inesperados. Se propone al final de la cadena, con límite predeterminado de −3 dBFS y liberación de 60 ms. El sonido bajo el límite no cambia.
+Pulse Mayús+I durante un aviso de salida. Para cada fuente responsable, el objetivo es el umbral menos el margen. Se usa el mayor pico observado en el incidente, se redondea la reducción hacia arriba a pasos de 0,5 dB y se limita al máximo configurado. Nunca aumenta ganancia ni actúa solo por un aviso pre-fader.
 
-El ajuste avanzado puede ampliar la política a todas las fuentes suficientemente activas. Es útil como protección estricta, pero puede ser innecesario en música o medios ya masterizados.
+Los valores iniciales son margen de 3 dB y reducción máxima de 12 dB. Protege picos, pero no equilibra por usted voz, música y efectos.
 
-### ¿Están relacionadas las recomendaciones de compresor y limitador?
+Ctrl+Mayús+I restaura solo controles que aún coinciden con el valor corregido. Iniciar o detener Audible Meter, cambiar de colección de escenas o guardar ajustes del medidor borra ese único nivel de restauración.
 
-No. Se evalúan por separado. Una fuente puede recibir ninguna, una o ambas. El compresor controla la variación dinámica; el limitador final impone un techo rígido de picos.
+## ¿Por qué tiene prioridad la guía de entrada?
 
-### ¿Qué más muestra el informe?
+La distorsión anterior al control debe corregirse en el origen. El primer diálogo es silencioso. Sí inicia la guía; No o Escape guarda una exclusión para esa fuente sin cambios. Una señal activa sana mantenida resuelve el incidente. Cambiar identidad o ajustes provoca una evaluación nueva.
 
-Muestra ajustes de compresores y limitadores existentes, avisa si un limitador no está al final, identifica picos repetidos anteriores al control cerca del recorte y explica pruebas insuficientes o cambios en la fuente. El audio recortado antes de OBS solo se corrige reduciendo la ganancia del dispositivo o aplicación.
+El silencio no equivale a éxito. Se avisa a los 2 y 12 segundos sin señal y se pregunta a los 22. Continuar espera señal sin repetir esa secuencia. Confirme el mensaje de éxito antes de reanudar otros avisos.
 
-### ¿Sound Doctor cambia algo automáticamente?
+La consola pausa el tiempo de avisos de salida y deja pendientes los de entrada. Audio activo sano elimina un problema ya resuelto; el silencio lo conserva. Cerrar la consola presenta primero los problemas de entrada vigentes.
 
-No por ejecutarse. Cada propuesta tiene inicialmente desmarcada **Aplicar este cambio automáticamente**. **Finalizar** aplica solo las seleccionadas. Antes vuelve a comprobar fuente, volumen y filtros y omite recomendaciones obsoletas. Los nuevos filtros tienen nombres visibles de Sound Doctor, se ordenan deliberadamente y admiten Deshacer y Rehacer de OBS. Escape cierra sin aplicar.
+## ¿Qué se puede configurar en Audible Meter?
 
-### ¿Puedo modificar la política?
+En **Herramientas de audio > Ajustes avanzados de audio > Audible Meter**:
 
-Abra **Herramientas > Accessible Studio > Herramientas de audio > Configuración avanzada de sonido** y la página **Sound Doctor**:
+- Umbral de salida: −30 a 0 dBFS; el valor inicial depende del modo de pico OBS.
+- Exposición: 0,1–30 segundos; inicial 1,5 segundos.
+- Margen: 0–12 dB; inicial 3 dB.
+- Reducción máxima: 0,5–30 dB; inicial 12 dB.
+- Exclusiones pre-fader: eliminar una para volver a comprobar esa entrada.
 
-- **Variación dinámica mínima para la compresión:** 6–15 dB; predeterminado 8 dB. Un valor menor da más recomendaciones.
-- **Relación máxima recomendada:** 2,5:1, 3:1 o 3,5:1; predeterminado 3:1.
-- **Fuentes aptas para limitador:** solo probables entradas en directo de forma predeterminada, o todas las fuentes activas.
-- **Límite recomendado:** −12 a −1 dBFS; predeterminado −3 dBFS.
+No cambian las zonas de consola, H/J/K/L ni el límite rojo de entrada. Solo hay un modo sin ventana. Aplicar guarda; Aceptar guarda y cierra; Cancelar descarta desde el último Aplicar.
 
-La sesión de 120 segundos y el requisito fijo de 45 segundos activos no se configuran. Aplicar guarda sin cerrar; Aceptar guarda y cierra; Cancelar descarta desde la última aplicación.
+## ¿Cuánto necesita Sound Doctor?
 
-## Audible Meter y corrección automática
+Al menos 120 segundos, con 45 segundos de audio activo por fuente para recomendar procesamiento. Son duraciones fijas. La medición puede continuar mientras se transmite o graba; los resultados esperan a que ambas actividades terminen. Use sonidos representativos. El programa no comprende palabras ni distingue con fiabilidad música y voz.
 
-### ¿Qué supervisa Audible Meter?
+## ¿Cuándo recomienda compresión?
 
-Ctrl+I inicia o detiene su único modo sin ventana. Sigue todas las fuentes activas. Usa el pico posterior al control para avisos de salida, el pico anterior para capturas en directo aptas y resúmenes RMS para niveles habituales. Funciona haya o no transmisión o grabación.
+La fuente debe ser una probable entrada en directo, tener suficiente audio activo, no haber cambiado y no contener compresor ni limitador, aunque estén desactivados. La diferencia dinámica debe alcanzar el mínimo configurado, inicialmente 8 dB.
 
-### ¿Qué significa el pitido automático?
+La diferencia se calcula entre mediana RMS activa y percentil 95. El RMS se corrige según la ganancia del control OBS. El compresor nuevo sigue al procesamiento existente y precede a un limitador nuevo seleccionado.
 
-El tono automático alto indica que alguna fuente ha pasado el tiempo real configurado en el nivel de aviso de salida o por encima. El tiempo predeterminado es 1,5 segundos. El nivel sigue el modo de medidor de OBS: −9 dBFS con pico de muestra o −2 dBFS con pico verdadero. Descensos menores de un segundo no reinician toda la exposición; un segundo por debajo rearma el aviso. Es un aviso, no una medida exacta, y el lector anuncia la fuente más problemática.
+El umbral es mediana más 5 dB, redondeado y limitado entre −24 y −10 dB. Ataque: 6 ms; liberación: 100 ms; ganancia de salida: 0 dB. Relación: 2:1 con diferencia inferior a 10 dB, 2,5:1 desde 10 hasta menos de 14 dB, y después el máximo configurado. Comprima música solo si desea ese efecto.
 
-El tono bajo significa que, después de aceptar ajustar una entrada apta, su señal anterior al control sigue en rojo. Reduzca la ganancia en el micrófono, interfaz, entrada de Windows o aplicación. El control de OBS no puede reparar esa distorsión.
+## ¿Cuándo recomienda un limitador?
 
-### ¿Qué significan los dos tonos de la Consola?
+Por defecto, en probables entradas en directo suficientemente activas, sin cambios y sin limitador. No exige saturación observada: es preventivo. El nuevo limitador cierra la cadena con techo inicial de −3 dBFS y liberación de 60 ms. No repara distorsión anterior ni garantiza que la mezcla total no se sobrecargue.
 
-Con Audible Meter activo y la Consola abierta, la fuente enfocada produce un tono medio en la zona amarilla de salida y uno alto en la roja. Verde, silencio, fuente no disponible o foco fuera de un control de fuente no producen tono. Son mediciones inmediatas, no avisos retardados, y I no los desactiva.
+El alcance puede incluir todas las fuentes activas; un medio ya masterizado quizá no lo necesite. Ambas recomendaciones son independientes. El informe también explica filtros existentes, limitadores no situados al final, picos de entrada repetidos próximos a saturación y datos insuficientes o caducados.
 
-Con pico de muestra, amarillo comienza en −20 dBFS y rojo en −9 dBFS. Con pico verdadero, amarillo comienza en −13 dBFS y rojo en −2 dBFS.
+## ¿Qué ajustes tiene Sound Doctor?
 
-### ¿Audible Meter baja el sonido por sí solo?
+- Diferencia dinámica mínima: 6–15 dB; inicial 8 dB.
+- Relación máxima: 2,5:1, 3:1 o 3,5:1; inicial 3:1. Puede recomendar valores menores.
+- Alcance del limitador: probables entradas en directo o todas las fuentes activas.
+- Techo: −12 a −1 dBFS; inicial −3 dBFS.
 
-No. Solo Mayús+I mientras suena el aviso alto solicita expresamente una corrección. Para cada fuente responsable calcula como objetivo el nivel de aviso menos el margen de seguridad, lo compara con el pico máximo observado, redondea la reducción necesaria hacia arriba a 0,5 dB y baja el control de OBS sin superar el máximo configurado. Nunca eleva una fuente ni cambia una fuente solo por aviso anterior al control.
+## ¿Puede cambiar algo sin aprobación?
 
-Los valores predeterminados son margen de 3 dB y reducción máxima de 12 dB. Es protección conservadora, no mezcla artística.
+No. Ninguna recomendación empieza marcada. Finalizar aplica solo las elegidas tras revisar fuente, volumen y filtros. Omite fuentes modificadas. Escape cierra sin cambios. Los filtros nuevos permiten Deshacer y Rehacer de OBS.
 
-### ¿Puedo deshacerla?
-
-Sí. Ctrl+Mayús+I restaura la última corrección de Mayús+I. Solo restaura una fuente si su control sigue en el valor automático; omite las modificadas después. Iniciar o detener el medidor, cambiar de colección o guardar ajustes nuevos borra este registro de restauración de un nivel.
-
-### ¿Cómo modifico el comportamiento?
-
-En la página **Audible Meter** de Configuración avanzada de sonido:
-
-- **Nivel de aviso de salida:** −30 a 0 dBFS; predeterminado −9 dBFS con pico de muestra o −2 dBFS con pico verdadero.
-- **Tiempo por encima:** 0,1–30 segundos; predeterminado 1,5 segundos.
-- **Margen de seguridad de pico:** 0–12 dB; predeterminado 3 dB.
-- **Reducción automática máxima:** 0,5–30 dB; predeterminado 12 dB.
-- **Lista de exclusión anterior al control:** quite excepciones guardadas para volver a comprobar entradas sin cambios.
-
-No alteran las zonas fijas de OBS, los tonos de medición, H/J/K/L ni el límite rojo anterior al control.
-
-### ¿Puedo silenciar temporalmente los avisos?
-
-Pulse I con Audible Meter activo. Al reactivarlos comienza una exposición nueva. Los tonos de la Consola continúan. Las letras no se interceptan al escribir en un control editable.
-
-### ¿Para qué sirven H, J, K y L?
-
-- H anuncia nivel y zona actuales de la última fuente enfocada en la Consola.
-- J anuncia la fuente activa más alta en ese instante.
-- K anuncia el nivel RMS activo habitual de la fuente seleccionada durante la sesión.
-- L anuncia la fuente con el nivel RMS habitual más alto de la sesión.
-
-### ¿Por qué tiene prioridad un aviso anterior al control?
-
-Señala posible daño antes del control de OBS. El diálogo de decisión es silencioso. Sí inicia la guía y el tono bajo continúa mientras la entrada esté roja. Un nivel activo seguro sostenido lo resuelve. El silencio no cuenta: hay anuncios a los 2 y 12 segundos y una pregunta a los 22. No o Escape guarda la fuente sin cambios en la lista de exclusión. Si cambia su identidad o configuración se evalúa de nuevo.
-
-### ¿Qué puedo hacer en la Consola de volumen accesible?
-
-Ctrl+Grave la abre. Izquierda/Derecha seleccionan; Arriba/Abajo cambian 1 dB; Inicio establece 0 dB; 1–9 seleccionan las primeras nueve fuentes y 0 la décima. Espacio alterna monitorización y salida juntas, Ctrl+Espacio solo monitorización y Mayús+Espacio solo salida. Normalmente aparecen fuentes activas del programa; **Mostrar todas las fuentes** añade las inactivas. Los cambios son inmediatos y la Consola no eleva por sí sola una fuente normal por encima de 0 dB.
-
-### ¿Cuál es el flujo más seguro?
-
-Ejecute Sound Doctor con voz y sonido representativos, revise cada propuesta y no seleccione compresión musical salvo que busque ese efecto. Mantenga Audible Meter activo, use los tonos de la Consola para inspección inmediata, corrija avisos anteriores al control en el dispositivo o aplicación original y use Mayús+I solo cuando quiera la reducción conservadora.
+Ctrl+Mayús+D puede interrumpir y descartar la medición tras confirmar. No o Escape continúa. La opción de recordar puede suprimir esa confirmación.

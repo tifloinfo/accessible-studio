@@ -47,7 +47,7 @@ The executable tests exercise meter initialization and level conversion, stale s
 
 - Multi-part settings and shortcut-policy saves can still partially succeed if a later write fails. A coordinated save and rollback design needs dedicated failure-injection tests.
 - Online requests still need user cancellation and an overall request deadline. Existing timeout and shutdown handling remains in place.
-- English documentation needs an editorial rewrite, and the other languages need full rewrites and fluent-speaker review. This build contains targeted factual corrections, not that rewrite.
+- The source manuals and audio FAQs have now been rewritten in all six languages. The retained Test 2 installer predates that rewrite; a future package will include it. Independent fluent-speaker review remains useful.
 - Broader separation of the large C++ implementation, official OBS header integration, and additional integration tests remain follow-up work.
 - The user has accepted the recent reliability changes after successful testing. Independent multilingual editorial review remains desirable. The installer is unsigned.
 

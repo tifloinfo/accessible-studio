@@ -13,6 +13,15 @@ for (const name of documents) {
   assert.match(html, /<html lang="[a-z]{2}">/, `${name}: missing language`);
   assert.match(html, /<main id="main-content">/, `${name}: missing main landmark`);
   assert.match(html, /<h1>/, `${name}: missing heading`);
+  assert.equal([...html.matchAll(/<h1>/g)].length, 1, `${name}: expected one document title`);
+  assert.match(html, /<nav aria-label="[^"]+">/, `${name}: missing contents landmark`);
+  const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(new Set(ids).size, ids.length, `${name}: duplicate anchor`);
+  let previousLevel = 0;
+  for (const [, level] of html.matchAll(/<h([1-6])\b/g)) {
+    assert.ok(Number(level) <= previousLevel + 1, `${name}: skipped heading level`);
+    previousLevel = Number(level);
+  }
   for (const [, value] of html.matchAll(/(?:href|src)="([^"]+)"/g)) {
     if (/^[a-z][a-z\d+.-]*:/i.test(value)) continue;
     const [relative, fragment] = value.split('#');
